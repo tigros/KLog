@@ -9,14 +9,11 @@
 #include "resource.h"
 
 extern PPH_PLUGIN PluginInstance;
-extern LIST_ENTRY EtProcessBlockListHead;
-extern LIST_ENTRY EtNetworkBlockListHead;
-extern HWND ProcessTreeNewHandle;
-extern HWND NetworkTreeNewHandle;
 
 #define PLUGIN_NAME2 L"ProcessHacker.KLog"
 #define SETTING_NAME_KLOG_TREE_LIST_COLUMNS (PLUGIN_NAME2 L".KLogTreeListColumns")
 #define SETTING_NAME_KLOG_TREE_LIST_SORT (PLUGIN_NAME2 L".KLogTreeListSort")
+#define SETTING_NAME_KLOG_AUTOSCROLL (PLUGIN_NAME2 L".KLogAutoScroll")
 
 #define ETKLTNC_TIMESTAMP 0
 #define ETKLTNC_TIME 1

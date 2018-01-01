@@ -295,4 +295,6 @@ VOID EtSaveSettingsKLogTreeList(
 	VOID
 	);
 
+void CleanupDriver();
+
 #endif

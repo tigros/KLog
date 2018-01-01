@@ -30,7 +30,7 @@ BOOLEAN KLogTreeNewCreated = FALSE;
 HWND KLogTreeNewHandle;
 
 static HANDLE gDriver = INVALID_HANDLE_VALUE;
-
+static ULONG PhCsKLogAutoScroll = 0;
 static PPH_MAIN_TAB_PAGE KLogPage;
 static ULONG KLogTreeNewSortColumn;
 static PH_SORT_ORDER KLogTreeNewSortOrder;
@@ -47,9 +47,7 @@ static PH_TN_FILTER_SUPPORT FilterSupport;
 static PTOOLSTATUS_INTERFACE ToolStatusInterface;
 static PH_CALLBACK_REGISTRATION SearchChangedRegistration;
 
-static HANDLE gDataEvent = NULL;
-static char *Gbuffer;
-static LLnode *GbacklogLL = NULL;
+static LLnode *gBacklogLL = NULL;
 
 HANDLE myOpenDriver()
 {
@@ -69,23 +67,12 @@ VOID initDriver()
 	UINT32 snapLen = 0;
 	DWORD bytesRead;
 
-	gDataEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	if (gDataEvent == NULL) {
-		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"Cannot create data event");
-		return;
-	}
-
 	gDriver = myOpenDriver();
 
 	if (gDriver == INVALID_HANDLE_VALUE)
 	{
 		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Is the modified kprocesshacker.sys driver started?");
 		return;
-	}
-
-	if (!DeviceIoControl(gDriver, IOCTL_KPH_SET_DATA_EVENT, &gDataEvent,
-		sizeof(HANDLE), NULL, 0, &bytesReturned, NULL)) {
-		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"Cannot send IOCTL to set data event");
 	}
 
 	if (!DeviceIoControl(gDriver, IOCTL_KPH_SET_SNAP_LENGTH, &snapLen,
@@ -300,6 +287,38 @@ VOID NTAPI EtpKlogTabFontChangedCallback(
         SendMessage(KLogTreeNewHandle, WM_SETFONT, (WPARAM)Parameter1, TRUE);
 }
 
+
+VOID EtSelectAndEnsureVisibleKLogNode(
+	_In_ PWE_KLOG_NODE KLogNode
+)
+{
+	if (KLogNode == NULL)
+		return;
+
+	EtDeselectAllKLogNodes();
+
+	if (!KLogNode->Node.Visible)
+		return;
+
+	TreeNew_SetFocusNode(KLogTreeNewHandle, &KLogNode->Node);
+	TreeNew_SetMarkNode(KLogTreeNewHandle, &KLogNode->Node);
+	TreeNew_SelectRange(KLogTreeNewHandle, KLogNode->Node.Index, KLogNode->Node.Index);
+	TreeNew_EnsureVisible(KLogTreeNewHandle, &KLogNode->Node);
+}
+
+void Autoscroll()
+{
+	if (!PhCsKLogAutoScroll || 
+		KLogTreeNewSortColumn > 1 || 
+		KLogTreeNewSortOrder != AscendingSortOrder)
+		return;
+
+	ULONG index = TreeNew_GetFlatNodeCount(KLogTreeNewHandle) - 1;
+
+	if (index > 0)
+		EtSelectAndEnsureVisibleKLogNode((PWE_KLOG_NODE)TreeNew_GetFlatNode(KLogTreeNewHandle, index));
+}
+
 PWE_KLOG_NODE WeAddKLogNode(
 	_Inout_ PPH_TREENEW_CONTEXT Context
 	)
@@ -356,12 +375,13 @@ VOID WepAddChildKLogNode(
 
 VOID WepAddChildKLogNodes(
 	_In_ PPH_TREENEW_CONTEXT Context,
+	char *buff,
 	DWORD bytesread
 	)
 {
 	UINT len;
-	WORD *bufw = (WORD *)Gbuffer;
-	DWORD *bufd = (DWORD *)Gbuffer;
+	WORD *bufw = (WORD *)buff;
+	DWORD *bufd = (DWORD *)buff;
 	wchar_t *Wcmdline;
 	wchar_t *Wexecutable;
 	ULONGLONG timestamp;
@@ -474,6 +494,7 @@ VOID ProcessLL(_In_ PPH_TREENEW_CONTEXT Context, LLnode *LL)
 	DWORD totbytesRead = 0;
 	LLnode *node = LL;
 	DWORD pos = 0;
+	char *buff;
 
 	while (node)
 	{
@@ -481,27 +502,31 @@ VOID ProcessLL(_In_ PPH_TREENEW_CONTEXT Context, LLnode *LL)
 		node = node->next;
 	}
 
-	Gbuffer = (char *)malloc(totbytesRead);
-
-	if (!Gbuffer)
+	if (!totbytesRead)
 		return;
 
-	ZeroMemory(Gbuffer, totbytesRead);
+	buff = (char *)malloc(totbytesRead);
+
+	if (!buff)
+		return;
+
+	ZeroMemory(buff, totbytesRead);
 
 	node = LL;
 
 	while (node)
 	{
 		if (node->buffer)
-			memcpy(&Gbuffer[pos], node->buffer, node->size);
+			memcpy(&buff[pos], node->buffer, node->size);
 		pos += node->size;
 		node = node->next;
 	}
 
-	WepAddChildKLogNodes(Context, totbytesRead);
+	WepAddChildKLogNodes(Context, buff, totbytesRead);
 
-	free(Gbuffer);
-	Gbuffer = NULL;
+	free(buff);
+
+	Autoscroll();
 }
 
 VOID WepAddKLogs(
@@ -533,22 +558,22 @@ void UpdateBacklog()
 
 	if (totbytesRead > 0)
 	{
-		if (GbacklogLL == NULL)
-			GbacklogLL = head;
+		if (gBacklogLL == NULL)
+			gBacklogLL = head;
 		else
-			LLappendLL(GbacklogLL, head);
+			LLappendLL(gBacklogLL, head);
 	}
 }
 
 VOID ProcessBacklog(_In_ PPH_TREENEW_CONTEXT Context)
 {
-	if (GbacklogLL == NULL)
+	if (gBacklogLL == NULL)
 		return;
 
-	ProcessLL(Context, GbacklogLL);
+	ProcessLL(Context, gBacklogLL);
 
-	LLfree(GbacklogLL);
-	GbacklogLL = NULL;
+	LLfree(gBacklogLL);
+	gBacklogLL = NULL;
 }
 
 VOID EtInitializeKLogTreeList(
@@ -590,7 +615,7 @@ VOID EtInitializeKLogTreeList(
 	WepAddKLogs(context);
 
 	if (gDriver == INVALID_HANDLE_VALUE)
-		WepAddChildKLogNode(context, time() * 1000000LL, 0, 0,
+		WepAddChildKLogNode(context, time(NULL) * 1000000LL, 0, 0,
 			L"*** The modified kprocesshacker.sys driver is not started! ***", 
 			L"*** The modified kprocesshacker.sys driver is not started! ***");
 
@@ -607,6 +632,8 @@ VOID EtLoadSettingsKLogTreeList(
 
     sortSettings = PhGetIntegerPairSetting(SETTING_NAME_KLOG_TREE_LIST_SORT);
     TreeNew_SetSort(KLogTreeNewHandle, (ULONG)sortSettings.X, (PH_SORT_ORDER)sortSettings.Y);
+
+	PhCsKLogAutoScroll = PhGetIntegerSetting(SETTING_NAME_KLOG_AUTOSCROLL);
 }
 
 VOID EtSaveSettingsKLogTreeList(
@@ -628,6 +655,19 @@ VOID EtSaveSettingsKLogTreeList(
     sortSettings.X = sortColumn;
     sortSettings.Y = sortOrder;
 	PhSetIntegerPairSetting(SETTING_NAME_KLOG_TREE_LIST_SORT, sortSettings);
+
+	PhSetIntegerSetting(SETTING_NAME_KLOG_AUTOSCROLL, PhCsKLogAutoScroll);
+}
+
+void CleanupDriver()
+{
+	if (gDriver != INVALID_HANDLE_VALUE) {
+		CloseHandle(gDriver);
+	}
+
+	if (gBacklogLL != NULL) {
+		LLfree(gBacklogLL);
+	}
 }
 
 VOID EtRemoveKLogNode(
@@ -938,21 +978,6 @@ VOID EtDeselectAllKLogNodes(
     TreeNew_DeselectRange(KLogTreeNewHandle, 0, -1);
 }
 
-VOID EtSelectAndEnsureVisibleKLogNode(
-    _In_ PWE_KLOG_NODE KLogNode
-    )
-{
-    EtDeselectAllKLogNodes();
-
-    if (!KLogNode->Node.Visible)
-        return;
-
-    TreeNew_SetFocusNode(KLogTreeNewHandle, &KLogNode->Node);
-    TreeNew_SetMarkNode(KLogTreeNewHandle, &KLogNode->Node);
-    TreeNew_SelectRange(KLogTreeNewHandle, KLogNode->Node.Index, KLogNode->Node.Index);
-    TreeNew_EnsureVisible(KLogTreeNewHandle, &KLogNode->Node);
-}
-
 VOID EtCopyKLogList(
     VOID
     )
@@ -1013,7 +1038,9 @@ VOID EtHandleKLogCommand(
         {
 			klogItem = EtGetSelectedKLogItem();
 
-			if (klogItem && klogItem->executable && wcscmp(klogItem->executable->Buffer, L"Exited") != 0)
+			if (klogItem && 
+				klogItem->PID != 0 &&
+				klogItem->executable && wcscmp(klogItem->executable->Buffer, L"Exited") != 0)
             {
 				PhShellExploreFile(PhMainWndHandle, klogItem->executable->Buffer);
             }
@@ -1039,6 +1066,11 @@ VOID EtHandleKLogCommand(
             }
         }
         break;
+	case ID_KLOG_AUTOSCROLL:
+		{
+			PhCsKLogAutoScroll ^= 1;
+		}
+		break;
     }
 }
 
@@ -1048,6 +1080,9 @@ VOID EtpInitializeKLogMenu(
     _In_ ULONG NumberOfKLogItems
     )
 {
+	if (PhCsKLogAutoScroll)
+		PhSetFlagsEMenuItem(Menu, ID_KLOG_AUTOSCROLL, PH_EMENU_CHECKED, PH_EMENU_CHECKED);
+
     if (NumberOfKLogItems == 0)
     {
         PhSetFlagsAllEMenuItems(Menu, PH_EMENU_DISABLED, PH_EMENU_DISABLED);
@@ -1065,6 +1100,7 @@ VOID EtpInitializeKLogMenu(
 			PhSetFlagsAllEMenuItems(Menu, PH_EMENU_DISABLED, PH_EMENU_DISABLED);
 			PhEnableEMenuItem(Menu, ID_KLOG_CLEARALL, TRUE);
 			PhEnableEMenuItem(Menu, ID_KLOG_COPY, TRUE);
+			PhEnableEMenuItem(Menu, ID_KLOG_AUTOSCROLL, TRUE);
 			return;
 		}
 		else if (wcscmp(KLogItems[0]->executable->Buffer, L"Exited") == 0)

@@ -31,7 +31,8 @@
 #define ID_KLOG_PROPERTIES              40011
 #define ID_KLOG_COPY                    40012
 #define ID_KLOG_CLEARALL                40013
-#define ID_KLOG_GOTOPARENTPROCESS             40014
+#define ID_KLOG_GOTOPARENTPROCESS		40014
+#define ID_KLOG_AUTOSCROLL				40050
 
 // Next default values for new objects
 //
