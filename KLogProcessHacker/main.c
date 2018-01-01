@@ -156,7 +156,7 @@ STATUS_UNSUCCESSFUL otherwise.
 		goto Cleanup;
 	}
 	WdfDeviceInitSetDeviceClass(wdfInit, &deviceGuid);
-	WdfDeviceInitSetDeviceType(wdfInit, FILE_DEVICE_NETWORK);
+	WdfDeviceInitSetDeviceType(wdfInit, FILE_DEVICE_UNKNOWN);
 	WdfDeviceInitSetCharacteristics(wdfInit, FILE_DEVICE_SECURE_OPEN, FALSE);
 	status = WdfDeviceInitAssignName(wdfInit, &deviceName);
 	if (!NT_SUCCESS(status)) {
