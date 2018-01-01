@@ -567,8 +567,8 @@ VOID EtInitializeKLogTreeList(
 	PhAddTreeNewColumn(hwnd, ETKLTNC_TIMESTAMP, TRUE, L"Timestamp", 120, PH_ALIGN_LEFT, 0, DT_LEFT);
 	PhAddTreeNewColumnEx(hwnd, ETKLTNC_TIME, TRUE, L"Time", 150, PH_ALIGN_LEFT, 1, 0, FALSE);
 	PhAddTreeNewColumn(hwnd, ETKLTNC_PID, TRUE, L"PID", 100, PH_ALIGN_RIGHT, 2, DT_RIGHT);
-	PhAddTreeNewColumn(hwnd, ETKLTNC_EXECUTABLE, TRUE, L"Executable", 200, PH_ALIGN_LEFT, 3, DT_PATH_ELLIPSIS);
-    PhAddTreeNewColumn(hwnd, ETKLTNC_CMDLINE, TRUE, L"Command Line", 700, PH_ALIGN_LEFT, 4, DT_PATH_ELLIPSIS);
+	PhAddTreeNewColumn(hwnd, ETKLTNC_EXECUTABLE, TRUE, L"Executable", 200, PH_ALIGN_LEFT, 3, DT_END_ELLIPSIS);
+    PhAddTreeNewColumn(hwnd, ETKLTNC_CMDLINE, TRUE, L"Command Line", 700, PH_ALIGN_LEFT, 4, DT_END_ELLIPSIS);
 	PhAddTreeNewColumn(hwnd, ETKLTNC_PARENTPID, TRUE, L"Parent PID", 100, PH_ALIGN_RIGHT, 5, DT_RIGHT);
 
 	TreeNew_SetRedraw(hwnd, TRUE);
