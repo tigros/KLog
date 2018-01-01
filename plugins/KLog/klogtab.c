@@ -292,13 +292,10 @@ VOID EtSelectAndEnsureVisibleKLogNode(
 	_In_ PWE_KLOG_NODE KLogNode
 )
 {
-	if (KLogNode == NULL)
+	if (KLogNode == NULL || !KLogNode->Node.Visible)
 		return;
 
 	EtDeselectAllKLogNodes();
-
-	if (!KLogNode->Node.Visible)
-		return;
 
 	TreeNew_SetFocusNode(KLogTreeNewHandle, &KLogNode->Node);
 	TreeNew_SetMarkNode(KLogTreeNewHandle, &KLogNode->Node);
