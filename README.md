@@ -17,5 +17,4 @@ the .sig check with a goto or whatever method you prefer.
 
 This program is based on the good work of the Battelle Memorial Institute team, see https://github.com/HoneProject for more information.
 
-tigros
-2017/12/31
+
