@@ -78,18 +78,18 @@ VOID initDriver()
 
 	if (!DeviceIoControl(gDriver, IOCTL_KPH_SET_SNAP_LENGTH, &snapLen,
 		sizeof(UINT32), NULL, 0, &bytesReturned, NULL)) {
-		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"Cannot send IOCTL to set snap length");
+		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Cannot send IOCTL to set snap length");
 	}
 
 	if (!DeviceIoControl(gDriver, IOCTL_KPH_GET_SNAP_LENGTH, NULL, 0,
 		&snapLenSet, sizeof(UINT32), &bytesReturned, NULL)) {
-		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"Cannot send IOCTL to get snap length");
+		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Cannot send IOCTL to get snap length");
 	}
 
 	// Discard first chunk.
 	char buffer[bufferSize];
 	if (!ReadFile(gDriver, buffer, bufferSize, &bytesRead, NULL)) {
-		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"Cannot read bytes from driver");
+		PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Cannot read bytes from driver");
 	}
 }
 
@@ -459,7 +459,7 @@ LLnode *getLL(DWORD *totbytesRead)
 	while (bytesRead == bufferSize)
 	{
 		if (!ReadFile(gDriver, tmpbuff, bufferSize, &bytesRead, NULL)) {
-			PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"Cannot read bytes from driver");
+			PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Cannot read bytes from driver");
 			*totbytesRead = 0;
 			break;
 		}
@@ -619,10 +619,10 @@ VOID EtInitializeKLogTreeList(
 
 	WepAddKLogs(context);
 
+	wchar_t *msg;
 	if (gDriver == INVALID_HANDLE_VALUE)
 		WepAddChildKLogNode(context, time(NULL) * 1000000LL, 0, 0,
-			L"*** The modified kprocesshacker.sys driver is not started! ***", 
-			L"*** The modified kprocesshacker.sys driver is not started! ***");
+			msg = L"*** The modified kprocesshacker.sys driver is not started! ***",  msg);
 
 	EtLoadSettingsKLogTreeList();
 }
