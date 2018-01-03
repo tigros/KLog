@@ -46,7 +46,7 @@ static PH_CALLBACK_REGISTRATION KLogItemsUpdatedRegistration;
 static PH_TN_FILTER_SUPPORT FilterSupport;
 static PTOOLSTATUS_INTERFACE ToolStatusInterface;
 static PH_CALLBACK_REGISTRATION SearchChangedRegistration;
-static PWE_KLOG_NODE PrevBottomNode = NULL;
+static PWE_KLOG_NODE gPrevBottomNode = NULL;
 
 static LLnode *gBacklogLL = NULL;
 
@@ -293,10 +293,10 @@ VOID EtSelectAndEnsureVisibleKLogNode(
 	_In_ PWE_KLOG_NODE KLogNode
 )
 {
-	if (KLogNode == NULL || !KLogNode->Node.Visible || KLogNode == PrevBottomNode)
+	if (KLogNode == NULL || !KLogNode->Node.Visible || KLogNode == gPrevBottomNode)
 		return;
 
-	PrevBottomNode = KLogNode;
+	gPrevBottomNode = KLogNode;
 	EtDeselectAllKLogNodes();
 	TreeNew_SetFocusNode(KLogTreeNewHandle, &KLogNode->Node);
 	TreeNew_SetMarkNode(KLogTreeNewHandle, &KLogNode->Node);
