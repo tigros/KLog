@@ -430,7 +430,7 @@ VOID WepAddChildKLogNodes(
 				*execpos, NULL, 0);
 			Wexecutable = (wchar_t *)malloc((requiredSize + 1) * sizeof(wchar_t));
 			requiredSize = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, &execpos[1],
-			*execpos, Wexecutable, requiredSize);
+				*execpos, Wexecutable, requiredSize);
 			Wexecutable[requiredSize] = L'\0';
 
 			WepAddChildKLogNode(Context, timestamp, PID, ParentPID, Wexecutable, Wcmdline);
