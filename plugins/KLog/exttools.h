@@ -3,6 +3,7 @@
 
 #define PHNT_VERSION PHNT_VISTA
 #include <windows.h>
+#include <locale.h>  
 #include <phdk.h>
 #include <settings.h>
 #include "ioctls.h"

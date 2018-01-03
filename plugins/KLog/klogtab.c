@@ -387,8 +387,8 @@ VOID WepAddChildKLogNodes(
 	DWORD PID = 0;
 	DWORD ParentPID = 0;
 	WORD *execpos = NULL;
-	size_t siz;
 	DWORD i;
+	int requiredSize;
 
 	if (bufd[0] != 257)
 		return;
@@ -418,13 +418,20 @@ VOID WepAddChildKLogNodes(
 		else if (bufw[i] == 11 && (bufw[i - 1] == 0 || bufw[i - 1] > 12))
 		{
 			len = bufw[++i];
-			Wcmdline = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
-			siz = mbstowcs(Wcmdline, &bufw[++i], len);
-			Wcmdline[siz] = L'\0';
 
-			Wexecutable = (wchar_t *)malloc((*execpos + 1) * sizeof(wchar_t));
-			siz = mbstowcs(Wexecutable, &execpos[1], *execpos);
-			Wexecutable[siz] = L'\0';
+			requiredSize = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, &bufw[++i],
+				len, NULL, 0);
+			Wcmdline = (wchar_t *)malloc((requiredSize + 1) * sizeof(wchar_t));
+			requiredSize = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, &bufw[i],
+				len, Wcmdline, requiredSize);
+			Wcmdline[requiredSize] = L'\0';
+
+			requiredSize = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, &execpos[1],
+				*execpos, NULL, 0);
+			Wexecutable = (wchar_t *)malloc((requiredSize + 1) * sizeof(wchar_t));
+			requiredSize = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, &execpos[1],
+			*execpos, Wexecutable, requiredSize);
+			Wexecutable[requiredSize] = L'\0';
 
 			WepAddChildKLogNode(Context, timestamp, PID, ParentPID, Wexecutable, Wcmdline);
 

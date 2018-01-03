@@ -136,9 +136,6 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CHANGELOG.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="KLog.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
