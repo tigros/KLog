@@ -124,11 +124,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BTree.c" />
     <ClCompile Include="klogtab.c" />
     <ClCompile Include="linkedlist.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BTree.h" />
     <ClInclude Include="ioctls.h" />
     <ClInclude Include="klogtabp.h" />
     <ClInclude Include="exttools.h" />

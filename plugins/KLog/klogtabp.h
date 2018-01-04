@@ -17,6 +17,7 @@ struct klogstruc
 	LARGE_INTEGER time;
 	DWORD PID;
 	DWORD ParentPID;
+	BYTE startexit;
 	PPH_STRING executable;
 	PPH_STRING cmdline;
 };

@@ -21,10 +21,10 @@
 
 #include "exttools.h"
 #include <toolstatusintf.h>
-#include "klogtabp.h"
 #include <stdlib.h>
 #include <psapi.h>
 #include "linkedlist.h"
+#include "BTree.h"
 
 BOOLEAN KLogTreeNewCreated = FALSE;
 HWND KLogTreeNewHandle;
@@ -48,6 +48,7 @@ static PTOOLSTATUS_INTERFACE ToolStatusInterface;
 static PH_CALLBACK_REGISTRATION SearchChangedRegistration;
 static PWE_KLOG_NODE gPrevBottomNode = NULL;
 
+static BTnode *gBTroot = NULL;
 static LLnode *gBacklogLL = NULL;
 
 HANDLE myOpenDriver()
@@ -121,7 +122,6 @@ VOID EtInitializeKlogTab(
 		tabInfo->BannerText = L"Search KLog";
 		tabInfo->ActivateContent = EtpToolStatusActivateContent;
 		tabInfo->GetTreeNewHandle = EtpToolStatusGetTreeNewHandle;
-
     }
 
 	initDriver();
@@ -338,6 +338,24 @@ PWE_KLOG_NODE WeAddKLogNode(
 	return klogNode;
 }
 
+void add2BT(PWE_KLOG_NODE childNode)
+{
+
+	BTnode *node;
+
+	node = BTsearch(gBTroot, childNode->aklog.PID);
+
+	if (!node)
+	{
+		BTinsert(&gBTroot, BTnew(childNode));
+	}
+	else
+	{
+		node->klognode = childNode;
+	}
+
+}
+
 VOID WepAddChildKLogNode(
 	_In_ PPH_TREENEW_CONTEXT Context,
 	ULONGLONG timestamp,
@@ -349,6 +367,7 @@ VOID WepAddChildKLogNode(
 {
 	PWE_KLOG_NODE childNode;
 	LARGE_INTEGER tstamp;
+	BTnode *btnode;
 
 	childNode = WeAddKLogNode(Context);
 	RtlSecondsSince1970ToTime(timestamp / 1000000, &tstamp);
@@ -361,8 +380,29 @@ VOID WepAddChildKLogNode(
 	PhPrintUInt32(childNode->aklog.PIDstring, PID);
 	PhPrintUInt32(childNode->aklog.ParentPIDstring, ParentPID);
 
-	childNode->aklog.executable = PhCreateString(Wexecutable);
-	childNode->aklog.cmdline = PhCreateString(Wcmdline);
+	if (Wexecutable == NULL)
+	{
+		childNode->aklog.startexit = 1;
+		btnode = BTsearch(gBTroot, childNode->aklog.PID);
+
+		if (btnode)
+		{
+			childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
+			childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
+		}
+		else
+		{
+			childNode->aklog.executable = PhCreateString(L"Exited");
+			childNode->aklog.cmdline = PhCreateString(L" ");
+		}
+	}
+	else
+	{
+		childNode->aklog.startexit = 0;
+		childNode->aklog.executable = PhCreateString(Wexecutable);
+		childNode->aklog.cmdline = PhCreateString(Wcmdline);
+		add2BT(childNode);
+	}
 
 	childNode->Node.Expanded = FALSE;
 	PhAddItemList(Context->FlatList, childNode);
@@ -410,7 +450,7 @@ VOID WepAddChildKLogNodes(
 
 			if (bufd[i / 2 + 1] == 44 && bufd[i / 2 + 8] == 0xffffffff)
 			{
-				WepAddChildKLogNode(Context, timestamp, PID, ParentPID, L"Exited", L" ");
+				WepAddChildKLogNode(Context, timestamp, PID, ParentPID, NULL, NULL);
 				i += 21;
 			}
 			else
@@ -595,11 +635,12 @@ VOID EtInitializeKLogTreeList(
 
 	// Default columns
 	PhAddTreeNewColumn(hwnd, ETKLTNC_TIMESTAMP, TRUE, L"Timestamp", 120, PH_ALIGN_LEFT, 0, DT_LEFT);
-	PhAddTreeNewColumnEx(hwnd, ETKLTNC_TIME, TRUE, L"Time", 150, PH_ALIGN_LEFT, 1, 0, FALSE);
+	PhAddTreeNewColumn(hwnd, ETKLTNC_TIME, TRUE, L"Time", 150, PH_ALIGN_LEFT, 1, 0);
 	PhAddTreeNewColumn(hwnd, ETKLTNC_PID, TRUE, L"PID", 100, PH_ALIGN_RIGHT, 2, DT_RIGHT);
-	PhAddTreeNewColumn(hwnd, ETKLTNC_EXECUTABLE, TRUE, L"Executable", 200, PH_ALIGN_LEFT, 3, DT_END_ELLIPSIS);
-    PhAddTreeNewColumn(hwnd, ETKLTNC_CMDLINE, TRUE, L"Command Line", 700, PH_ALIGN_LEFT, 4, DT_END_ELLIPSIS);
-	PhAddTreeNewColumn(hwnd, ETKLTNC_PARENTPID, TRUE, L"Parent PID", 100, PH_ALIGN_RIGHT, 5, DT_RIGHT);
+	PhAddTreeNewColumn(hwnd, ETKLTNC_STARTEXIT, TRUE, L"Start/Exit", 80, PH_ALIGN_LEFT, 3, DT_LEFT);
+	PhAddTreeNewColumn(hwnd, ETKLTNC_EXECUTABLE, TRUE, L"Executable", 200, PH_ALIGN_LEFT, 4, DT_END_ELLIPSIS);
+    PhAddTreeNewColumn(hwnd, ETKLTNC_CMDLINE, TRUE, L"Command Line", 700, PH_ALIGN_LEFT, 5, DT_END_ELLIPSIS);
+	PhAddTreeNewColumn(hwnd, ETKLTNC_PARENTPID, TRUE, L"Parent PID", 100, PH_ALIGN_RIGHT, 6, DT_RIGHT);
 
 	TreeNew_SetRedraw(hwnd, TRUE);
 
@@ -666,13 +707,14 @@ VOID EtSaveSettingsKLogTreeList(
 
 void CleanupDriver()
 {
-	if (gDriver != INVALID_HANDLE_VALUE) {
+	if (gDriver != INVALID_HANDLE_VALUE)
 		CloseHandle(gDriver);
-	}
 
-	if (gBacklogLL != NULL) {
+	if (gBacklogLL != NULL) 
 		LLfree(gBacklogLL);
-	}
+	
+	BTfree(gBTroot);
+	gBTroot = NULL;
 }
 
 VOID EtRemoveKLogNode(
@@ -741,6 +783,12 @@ BEGIN_SORT_FUNCTION(ParentPID)
 }
 END_SORT_FUNCTION
 
+BEGIN_SORT_FUNCTION(StartExit)
+{
+	sortResult = -uintcmp(klogItem1->startexit, klogItem2->startexit);
+}
+END_SORT_FUNCTION
+
 BEGIN_SORT_FUNCTION(Executable)
 {
 	if (klogItem1->executable && klogItem2->executable)
@@ -779,6 +827,7 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
 					SORT_FUNCTION(Timestamp),
 					SORT_FUNCTION(Time),
 					SORT_FUNCTION(PID),
+					SORT_FUNCTION(StartExit),
 					SORT_FUNCTION(Executable),
                     SORT_FUNCTION(CommandLine),
 					SORT_FUNCTION(ParentPID)
@@ -821,6 +870,11 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
 			case ETKLTNC_PID:
 			{
 				PhInitializeStringRef(&getCellText->Text, klogItem->PIDstring);
+			}
+			break;
+			case ETKLTNC_STARTEXIT:
+			{
+				PhInitializeStringRef(&getCellText->Text, klogItem->startexit ? L"Exit" : L"Start");
 			}
 			break;
 			case ETKLTNC_PARENTPID:
@@ -999,6 +1053,9 @@ void clearallrows()
 	ULONG i;
 
 	TreeNew_SetRedraw(KLogTreeNewHandle, FALSE);
+
+	BTfree(gBTroot);
+	gBTroot = NULL;
 
 	while (KLogNodeList->Count > 0)
 	{
