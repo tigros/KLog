@@ -1265,6 +1265,11 @@ BOOLEAN NTAPI EtpSearchKLogListFilterCallback(
 	if (wordMatch(&sr))
 		return TRUE;
 
+	PhInitializeStringRef(&sr, klogItem->startexit ? L"Exit" : L"Start");
+
+	if (wordMatch(&sr))
+		return TRUE;
+
     return FALSE;
 }
 
