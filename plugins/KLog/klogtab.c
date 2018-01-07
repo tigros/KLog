@@ -816,6 +816,18 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
 
     switch (Message)
     {
+	case TreeNewGetNodeColor:
+		{
+			PPH_TREENEW_GET_NODE_COLOR getNodeColor = Parameter1;
+
+			node = (PWE_KLOG_NODE)getNodeColor->Node;
+
+			if (node->aklog.startexit == 1)
+				getNodeColor->BackColor = RGB(0xD3, 0xD3, 0xD3);
+
+			getNodeColor->Flags = TN_CACHE;
+		}
+		return TRUE;
     case TreeNewGetChildren:
         {
             PPH_TREENEW_GET_CHILDREN getChildren = Parameter1;
