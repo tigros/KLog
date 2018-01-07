@@ -550,26 +550,33 @@ VOID ProcessLL(_In_ PPH_TREENEW_CONTEXT Context, LLnode *LL)
 	if (!totbytesRead)
 		return;
 
-	buff = (char *)malloc(totbytesRead);
-
-	if (!buff)
-		return;
-
-	ZeroMemory(buff, totbytesRead);
-
 	node = LL;
 
-	while (node)
+	if (totbytesRead > node->size)
 	{
-		if (node->buffer)
-			memcpy(&buff[pos], node->buffer, node->size);
-		pos += node->size;
-		node = node->next;
+		buff = (char *)malloc(totbytesRead);
+
+		if (!buff)
+			return;
+
+		ZeroMemory(buff, totbytesRead);
+
+		while (node)
+		{
+			if (node->buffer)
+				memcpy(&buff[pos], node->buffer, node->size);
+			pos += node->size;
+			node = node->next;
+		}
+
+		WepAddChildKLogNodes(Context, buff, totbytesRead);
+
+		free(buff);
 	}
-
-	WepAddChildKLogNodes(Context, buff, totbytesRead);
-
-	free(buff);
+	else
+	{
+		WepAddChildKLogNodes(Context, node->buffer, node->size);
+	}
 
 	Autoscroll();
 }
