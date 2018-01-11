@@ -24,16 +24,16 @@ extern "C" {
 //----------------------------------------------------------------------------
 void FormatTimestamp(__in char *buffer, __in const size_t size)
 {
-	LARGE_INTEGER localTime;
-	LARGE_INTEGER systemTime;
-	TIME_FIELDS   timeFields;
+    LARGE_INTEGER localTime;
+    LARGE_INTEGER systemTime;
+    TIME_FIELDS   timeFields;
 
-	KeQuerySystemTime(&systemTime);
-	ExSystemTimeToLocalTime(&systemTime, &localTime);
-	RtlTimeToTimeFields(&localTime, &timeFields);
-	RtlStringCbPrintfA(buffer, size, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
-			timeFields.Year, timeFields.Month, timeFields.Day,
-			timeFields.Hour, timeFields.Minute, timeFields.Second, timeFields.Milliseconds);
+    KeQuerySystemTime(&systemTime);
+    ExSystemTimeToLocalTime(&systemTime, &localTime);
+    RtlTimeToTimeFields(&localTime, &timeFields);
+    RtlStringCbPrintfA(buffer, size, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
+            timeFields.Year, timeFields.Month, timeFields.Day,
+            timeFields.Hour, timeFields.Minute, timeFields.Second, timeFields.Milliseconds);
 }
 
 #ifdef __cplusplus

@@ -51,17 +51,17 @@ NTSTATUS KphDispatchDeviceControl(
     } while (0)
 
     stackLocation = IoGetCurrentIrpStackLocation(Irp);
-	ioControlCode = stackLocation->Parameters.DeviceIoControl.IoControlCode;
+    ioControlCode = stackLocation->Parameters.DeviceIoControl.IoControlCode;
 
-	if (((ioControlCode >> 0x10) ^ KPH_DEVICE_TYPE) != 0)  // if K-Log
-		return DispatchDeviceControl(DeviceObject, Irp);
+    if (((ioControlCode >> 0x10) ^ KPH_DEVICE_TYPE) != 0)  // if K-Log
+        return DispatchDeviceControl(DeviceObject, Irp);
 
-	fileObject = stackLocation->FileObject;
-	client = fileObject->FsContext;
+    fileObject = stackLocation->FileObject;
+    client = fileObject->FsContext;
     originalInput = stackLocation->Parameters.DeviceIoControl.Type3InputBuffer;
     inputLength = stackLocation->Parameters.DeviceIoControl.InputBufferLength;
     accessMode = Irp->RequestorMode;
-	
+
     // Make sure we have a client object.
     if (!client)
     {
@@ -557,14 +557,14 @@ NTSTATUS KphDispatchDeviceControl(
         }
         break;
     default:
-		status = STATUS_INVALID_DEVICE_REQUEST;
-		break;
+        status = STATUS_INVALID_DEVICE_REQUEST;
+        break;
     }
 
 ControlEnd:
-	Irp->IoStatus.Information = 0;
-	Irp->IoStatus.Status = status;
-	IoCompleteRequest(Irp, IO_NO_INCREMENT);
-	
-	return status;
+    Irp->IoStatus.Information = 0;
+    Irp->IoStatus.Status = status;
+    IoCompleteRequest(Irp, IO_NO_INCREMENT);
+
+    return status;
 }

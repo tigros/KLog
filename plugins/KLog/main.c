@@ -126,7 +126,7 @@ LOGICAL DllMain(
                 {
                     { StringSettingType, SETTING_NAME_KLOG_TREE_LIST_COLUMNS, L"" },
                     { IntegerPairSettingType, SETTING_NAME_KLOG_TREE_LIST_SORT, L"0,1" },
-					{ IntegerSettingType, SETTING_NAME_KLOG_AUTOSCROLL, L"0" }
+                    { IntegerSettingType, SETTING_NAME_KLOG_AUTOSCROLL, L"0" }
                 };
 
                 PhAddSettings(settings, sizeof(settings) / sizeof(PH_SETTING_CREATE));
@@ -143,8 +143,8 @@ VOID NTAPI UnloadCallback(
     _In_opt_ PVOID Context
     )
 {
-	CleanupDriver();
-	EtSaveSettingsKLogTreeList();
+    CleanupDriver();
+    EtSaveSettingsKLogTreeList();
 }
 
 VOID NTAPI MainWindowShowingCallback(
@@ -153,7 +153,7 @@ VOID NTAPI MainWindowShowingCallback(
     )
 {
     BOOL res = SetWindowSubclass(PhMainWndHandle, MainWndPluginSubclassProc, 0, 0);
-	EtInitializeKlogTab();
+    EtInitializeKlogTab();
 }
 
 static VOID NTAPI ProcessesUpdatedCallback(
@@ -161,13 +161,13 @@ static VOID NTAPI ProcessesUpdatedCallback(
     _In_opt_ PVOID Context
     )
 {
-	if (KLogTreeNewCreated)
-	{
-		ProcessKLog();
-	}
-	else
-	{
-		UpdateBacklog();
-	}
+    if (KLogTreeNewCreated)
+    {
+        ProcessKLog();
+    }
+    else
+    {
+        UpdateBacklog();
+    }
 }
 

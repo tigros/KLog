@@ -93,5 +93,5 @@ VOID EtpNetworkIconUpdateCallback(
     _In_opt_ PVOID Context
     )
 {
-   
+
 }

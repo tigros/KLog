@@ -6,9 +6,9 @@
 
 typedef struct BTnode
 {
-	struct BTnode *left, *right;
-	DWORD PID;
-	PWE_KLOG_NODE klognode;
+    struct BTnode *left, *right;
+    DWORD PID;
+    PWE_KLOG_NODE klognode;
 } BTnode;
 
 BTnode *BTnew(PWE_KLOG_NODE klognode);

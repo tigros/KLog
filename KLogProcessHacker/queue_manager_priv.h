@@ -37,10 +37,10 @@ extern "C" {
 
 // An LLRB tree node that holds information for an open connection
 struct OCONN_NODE {
-	LLRB_ENTRY(OCONN_NODE) TreeEntry;   // LLRB tree entry
-	UINT16                 Port;        // Connection port
-	UINT32                 ProcessId;   // Process that owns the connection
-	LARGE_INTEGER          Timestamp;   // Time connection was opened
+    LLRB_ENTRY(OCONN_NODE) TreeEntry;   // LLRB tree entry
+    UINT16                 Port;        // Connection port
+    UINT32                 ProcessId;   // Process that owns the connection
+    LARGE_INTEGER          Timestamp;   // Time connection was opened
 };
 
 typedef struct OCONN_NODE OCONN_NODE;
@@ -63,8 +63,8 @@ typedef LLRB_HEAD(OconnTree, OCONN_NODE) OCONN_TREE_HEAD;
 /// @brief poolTag     Tag to use if allocating additional memory for data buffer
 __checkReturn
 BLOCK_NODE* AllocateBlockNode(
-	__in const UINT32 dataLength,
-	__in const UINT32 poolTag);
+    __in const UINT32 dataLength,
+    __in const UINT32 poolTag);
 
 //----------------------------------------------------------------------------
 /// @brief Calculates the maximum snap length of all registered readers
@@ -176,10 +176,10 @@ void EnqueueBlock(__in BLOCK_NODE *blockNode);
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 BLOCK_NODE* GetConnectionBlock(
-	__in const bool            opened,
-	__in const UINT32          connectionId,
-	__in const UINT32          processId,
-	__in const LARGE_INTEGER  *timestamp);
+    __in const bool            opened,
+    __in const UINT32          connectionId,
+    __in const UINT32          processId,
+    __in const LARGE_INTEGER  *timestamp);
 
 //----------------------------------------------------------------------------
 /// @brief Allocates and populates PCAP-NG interface description block
@@ -206,13 +206,13 @@ BLOCK_NODE* GetInterfaceDescriptionBlock(void);
 /// @returns The block if successful; NULL otherwise
 __checkReturn
 BLOCK_NODE* GetProcessBlock(
-	__in const bool            started,
-	__in const UINT32          pid,
-	__in const UINT32          parentPid,
-	__in UNICODE_STRING       *path,
-	__in UNICODE_STRING       *args,
-	__in UNICODE_STRING       *sid,
-	__in const LARGE_INTEGER  *timestamp);
+    __in const bool            started,
+    __in const UINT32          pid,
+    __in const UINT32          parentPid,
+    __in UNICODE_STRING       *path,
+    __in UNICODE_STRING       *args,
+    __in UNICODE_STRING       *sid,
+    __in const LARGE_INTEGER  *timestamp);
 
 //----------------------------------------------------------------------------
 /// @brief Gets the process ID associated with a connection ID
@@ -224,10 +224,10 @@ BLOCK_NODE* GetProcessBlock(
 ///
 /// @returns Process ID if successful; _UI32_MAX otherwise
 UINT32 GetProcessIdForConnectionId(
-	__in const UINT32 connectionId,
-	__in const UINT16 addressFamily,
-	__in const UINT8  protocol,
-	__in const UINT16 port);
+    __in const UINT32 connectionId,
+    __in const UINT16 addressFamily,
+    __in const UINT8  protocol,
+    __in const UINT16 port);
 
 //----------------------------------------------------------------------------
 /// @brief Gets the size of the ring buffer from the registry
@@ -289,8 +289,8 @@ KDEFERRED_ROUTINE ProcessConnectionCloseEvents;
 /// @param connectionId  ID of the connection
 /// @param processId     ID of the process that owns the connection
 void ReleasePacketBlocks(
-	__in const UINT32 connectionId,
-	__in const UINT32 processId);
+    __in const UINT32 connectionId,
+    __in const UINT32 processId);
 
 //----------------------------------------------------------------------------
 /// @brief Sets PCAP-NG option parameters and copies option data
@@ -303,11 +303,11 @@ void ReleasePacketBlocks(
 ///
 /// @returns Offset to next byte after the option
 UINT32 SetOption(
-	__in char         *buffer,
-	__in UINT32        offset,
-	__in const UINT16  code,
-	__in const void   *data,
-	__in const UINT16  length);
+    __in char         *buffer,
+    __in UINT32        offset,
+    __in const UINT16  code,
+    __in const void   *data,
+    __in const UINT16  length);
 
 //----------------------------------------------------------------------------
 /// @brief Sets UTF-8 string PCAP-NG option parameters and copies option data
@@ -325,12 +325,12 @@ UINT32 SetOption(
 ///
 /// @returns Offset to next byte after the option
 UINT32 SetUtf8Option(
-	__in char                 *buffer,
-	__in UINT32                offset,
-	__in const UINT16          code,
-	__in const UNICODE_STRING *data,
-	__in UINT16                length,
-	__in UINT16               *bytesRemoved);
+    __in char                 *buffer,
+    __in UINT32                offset,
+    __in const UINT16          code,
+    __in const UNICODE_STRING *data,
+    __in UINT16                length,
+    __in UINT16               *bytesRemoved);
 
 //----------------------------------------------------------------------------
 /// @brief Calculates seconds elapsed between start and end tick counts

@@ -5,7 +5,7 @@
 
 typedef struct LLnode
 {
-	unsigned long size;
+    unsigned long size;
     char *buffer;
     struct LLnode *next;
 } LLnode;

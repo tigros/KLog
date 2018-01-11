@@ -6,11 +6,11 @@ LLnode *LLcreate()
     LLnode *newnode = (LLnode *)malloc(sizeof(LLnode));
     if (!newnode)
     {
-		return NULL;
-	}
+        return NULL;
+    }
 
-	newnode->size = 0;
-	newnode->buffer = NULL;
+    newnode->size = 0;
+    newnode->buffer = NULL;
     newnode->next = NULL;
 
     return newnode;
@@ -28,34 +28,34 @@ LLnode *LLappend(LLnode *head)
     LLnode *newnode = LLcreate();
     cursor->next = newnode;
 
-	return newnode;
+    return newnode;
 }
 
 void LLappendLL(LLnode *head, LLnode *LL)
 {
-	if (head == NULL || LL == NULL)
-		return;
+    if (head == NULL || LL == NULL)
+        return;
 
-	LLnode *cursor = head;
-	while (cursor->next != NULL)
-		cursor = cursor->next;
+    LLnode *cursor = head;
+    while (cursor->next != NULL)
+        cursor = cursor->next;
 
-	cursor->next = LL;
+    cursor->next = LL;
 }
 
 void LLfree(LLnode *head)
 {
-	LLnode *cursor, *tmp;
+    LLnode *cursor, *tmp;
 
-	cursor = head;
+    cursor = head;
 
-	while (cursor != NULL)
-	{
-		tmp = cursor->next;
-		if (cursor->buffer != NULL)
-			free(cursor->buffer);
-		free(cursor);
-		cursor = tmp;
-	}
+    while (cursor != NULL)
+    {
+        tmp = cursor->next;
+        if (cursor->buffer != NULL)
+            free(cursor->buffer);
+        free(cursor);
+        cursor = tmp;
+    }
 }
 

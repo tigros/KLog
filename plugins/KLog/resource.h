@@ -11,7 +11,7 @@
 #define IDD_OPTIONS                     114
 #define IDR_EMPTYMEMLISTS               116
 #define IDR_DISK                        118
-#define IDR_KLOG                       	121
+#define IDR_KLOG                        121
 #define ID_VIEW_GPUINFORMATION          119
 #define IDD_DISKTABRESTART              127
 #define ID_PROCESS_HOOKS                130
@@ -31,8 +31,8 @@
 #define ID_KLOG_PROPERTIES              40011
 #define ID_KLOG_COPY                    40012
 #define ID_KLOG_CLEARALL                40013
-#define ID_KLOG_GOTOPARENTPROCESS		40014
-#define ID_KLOG_AUTOSCROLL				40050
+#define ID_KLOG_GOTOPARENTPROCESS       40014
+#define ID_KLOG_AUTOSCROLL              40050
 
 // Next default values for new objects
 //

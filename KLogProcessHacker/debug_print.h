@@ -23,27 +23,27 @@ extern "C" {
 #if DBG
 
 enum DebugLevel {
-	D_ERR  = 0, // Error messages
-	D_WARN,     // Warning messages
-	D_INFO,     // Informational messages
-	D_DBG,      // Verbose debugging messages
-	D_LOCK,     // Verbose lock debugging messages
+    D_ERR  = 0, // Error messages
+    D_WARN,     // Warning messages
+    D_INFO,     // Informational messages
+    D_DBG,      // Verbose debugging messages
+    D_LOCK,     // Verbose lock debugging messages
 };
 
 #define DBGPRINT(level, format, ...) \
 { \
-	char  timestamp[32]; \
-	char *levelStr; \
-	FormatTimestamp(timestamp, sizeof(timestamp)); \
-	switch (level) { \
-	case D_ERR:  levelStr = "ERR "; break; \
-	case D_WARN: levelStr = "WARN"; break; \
-	case D_DBG:  levelStr = "DBG "; break; \
-	case D_LOCK: levelStr = "LOCK"; break; \
-	default:     levelStr = "INFO"; break; \
-	} \
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, level, "HONE %s %s %s: " format "\n", \
-			levelStr, timestamp, __FUNCTION__, ## __VA_ARGS__); \
+    char  timestamp[32]; \
+    char *levelStr; \
+    FormatTimestamp(timestamp, sizeof(timestamp)); \
+    switch (level) { \
+    case D_ERR:  levelStr = "ERR "; break; \
+    case D_WARN: levelStr = "WARN"; break; \
+    case D_DBG:  levelStr = "DBG "; break; \
+    case D_LOCK: levelStr = "LOCK"; break; \
+    default:     levelStr = "INFO"; break; \
+    } \
+    DbgPrintEx(DPFLTR_IHVDRIVER_ID, level, "HONE %s %s %s: " format "\n", \
+            levelStr, timestamp, __FUNCTION__, ## __VA_ARGS__); \
 }
 
 #define BREAKPOINT() __debugbreak()

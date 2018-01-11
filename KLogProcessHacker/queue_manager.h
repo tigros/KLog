@@ -39,19 +39,19 @@ extern "C" {
 
 // Supported PCAP-NG block types
 enum BLOCK_TYPES {
-	ConnectionBlock           = 0x00000102,
-	InterfaceDescriptionBlock = 0x00000001,
-	PacketBlock               = 0x00000006,
-	ProcessBlock              = 0x00000101,
-	SectionHeaderBlock        = 0x0A0D0D0A,
+    ConnectionBlock           = 0x00000102,
+    InterfaceDescriptionBlock = 0x00000001,
+    PacketBlock               = 0x00000006,
+    ProcessBlock              = 0x00000101,
+    SectionHeaderBlock        = 0x0A0D0D0A,
 };
 
 #pragma pack(push, 4) // PCAP-NG structures are 32-bit aligned
 
 // PCAP-NG block option header
 struct PCAP_NG_OPTION_HEADER {
-	UINT16 OptionCode;
-	UINT16 OptionLength;
+    UINT16 OptionCode;
+    UINT16 OptionLength;
 };
 
 typedef struct PCAP_NG_OPTION_HEADER PCAP_NG_OPTION_HEADER;
@@ -81,13 +81,13 @@ typedef struct PCAP_NG_OPTION_HEADER PCAP_NG_OPTION_HEADER;
 //    +---------------------------------------------------------------+
 //
 struct PCAP_NG_CONNECTION_HEADER {
-	UINT32 BlockType;
-	UINT32 BlockLength;
-	UINT32 ConnectionId;
-	UINT32 ProcessId;
-	UINT32 TimestampHigh;
-	UINT32 TimestampLow;
-	// Options and block length
+    UINT32 BlockType;
+    UINT32 BlockLength;
+    UINT32 ConnectionId;
+    UINT32 ProcessId;
+    UINT32 TimestampHigh;
+    UINT32 TimestampLow;
+    // Options and block length
 };
 
 typedef struct PCAP_NG_CONNECTION_HEADER PCAP_NG_CONNECTION_HEADER;
@@ -113,15 +113,15 @@ typedef struct PCAP_NG_CONNECTION_HEADER PCAP_NG_CONNECTION_HEADER;
 //    +---------------------------------------------------------------+
 //
 struct PCAP_NG_INTERFACE_DESCRIPTION {
-	UINT32                       BlockType;
-	UINT32                       BlockLength;
-	UINT16                       LinkType;
-	UINT16                       Reserved;
-	UINT32                       SnapLength;
-	struct PCAP_NG_OPTION_HEADER IfDescHeader;
-	char                         IfDesc[28];
-	struct PCAP_NG_OPTION_HEADER OptionEnd;
-	UINT32                       BlockLengthFooter;
+    UINT32                       BlockType;
+    UINT32                       BlockLength;
+    UINT16                       LinkType;
+    UINT16                       Reserved;
+    UINT32                       SnapLength;
+    struct PCAP_NG_OPTION_HEADER IfDescHeader;
+    char                         IfDesc[28];
+    struct PCAP_NG_OPTION_HEADER OptionEnd;
+    UINT32                       BlockLengthFooter;
 };
 
 typedef struct PCAP_NG_INTERFACE_DESCRIPTION PCAP_NG_INTERFACE_DESCRIPTION;
@@ -158,27 +158,27 @@ typedef struct PCAP_NG_INTERFACE_DESCRIPTION PCAP_NG_INTERFACE_DESCRIPTION;
 //    +---------------------------------------------------------------+
 //
 struct PCAP_NG_PACKET_HEADER {
-	UINT32 BlockType;
-	UINT32 BlockLength;
-	UINT32 InterfaceId;
-	UINT32 TimestampHigh;
-	UINT32 TimestampLow;
-	UINT32 CapturedLength;
-	UINT32 PacketLength;
-	// Block data, options, and block length
+    UINT32 BlockType;
+    UINT32 BlockLength;
+    UINT32 InterfaceId;
+    UINT32 TimestampHigh;
+    UINT32 TimestampLow;
+    UINT32 CapturedLength;
+    UINT32 PacketLength;
+    // Block data, options, and block length
 };
 
 typedef struct PCAP_NG_PACKET_HEADER PCAP_NG_PACKET_HEADER;
 
 struct PCAP_NG_PACKET_FOOTER {
-	struct PCAP_NG_OPTION_HEADER ConnectionIdHeader;
-	UINT32                       ConnectionId;
-	struct PCAP_NG_OPTION_HEADER ProcessIdHeader;
-	UINT32                       ProcessId;
-	struct PCAP_NG_OPTION_HEADER FlagsHeader;
-	UINT32                       Flags;
-	struct PCAP_NG_OPTION_HEADER OptionEnd;
-	UINT32                       BlockLength;
+    struct PCAP_NG_OPTION_HEADER ConnectionIdHeader;
+    UINT32                       ConnectionId;
+    struct PCAP_NG_OPTION_HEADER ProcessIdHeader;
+    UINT32                       ProcessId;
+    struct PCAP_NG_OPTION_HEADER FlagsHeader;
+    UINT32                       Flags;
+    struct PCAP_NG_OPTION_HEADER OptionEnd;
+    UINT32                       BlockLength;
 };
 
 typedef struct PCAP_NG_PACKET_FOOTER PCAP_NG_PACKET_FOOTER;
@@ -206,14 +206,14 @@ typedef struct PCAP_NG_PACKET_FOOTER PCAP_NG_PACKET_FOOTER;
 //    +---------------------------------------------------------------+
 //
 struct PCAP_NG_PROCESS_HEADER {
-	UINT32                       BlockType;
-	UINT32                       BlockLength;
-	UINT32                       ProcessId;
-	UINT32                       TimestampHigh;
-	UINT32                       TimestampLow;
-	struct PCAP_NG_OPTION_HEADER ParentPidHeader;
-	UINT32                       ParentPid;
-	// Options and block length
+    UINT32                       BlockType;
+    UINT32                       BlockLength;
+    UINT32                       ProcessId;
+    UINT32                       TimestampHigh;
+    UINT32                       TimestampLow;
+    struct PCAP_NG_OPTION_HEADER ParentPidHeader;
+    UINT32                       ParentPid;
+    // Options and block length
 };
 
 typedef struct PCAP_NG_PROCESS_HEADER PCAP_NG_PROCESS_HEADER;
@@ -243,13 +243,13 @@ typedef struct PCAP_NG_PROCESS_HEADER PCAP_NG_PROCESS_HEADER;
 //    +---------------------------------------------------------------+
 //
 struct PCAP_NG_SECTION_HEADER {
-	UINT32 BlockType;
-	UINT32 BlockLength;
-	UINT32 ByteOrder;
-	UINT16 MajorVersion;
-	UINT16 MinorVersion;
-	UINT64 SectionLength;
-	// Options and block length
+    UINT32 BlockType;
+    UINT32 BlockLength;
+    UINT32 ByteOrder;
+    UINT16 MajorVersion;
+    UINT16 MinorVersion;
+    UINT64 SectionLength;
+    // Options and block length
 };
 
 typedef struct PCAP_NG_SECTION_HEADER PCAP_NG_SECTION_HEADER;
@@ -260,37 +260,37 @@ typedef struct PCAP_NG_SECTION_HEADER PCAP_NG_SECTION_HEADER;
 // contain all of it.  Otherwise, it is in the buffer pointed to by Buffer.
 //typedef bool _Bool;
 struct BLOCK_NODE {
-	LLRB_ENTRY(BLOCK_NODE) TreeEntry;    // LLRB tree entry
-	LIST_ENTRY             ListEntry;    // Doubly-linked list of blocks
-	LONG                   RefCount;     // Block reference count
-	UINT32                 BlockType;    // Block type to aid in debugging
-	UINT32                 BlockLength;  // Block data length in bytes
-	UINT32                 SortId;       // Process or connection ID for sorting
-	UINT32                 ConnectionId; // Connection ID (0 if none)
-	UINT32                 ProcessId;    // Process ID (0xFFFFFFFF if none, since 0 is a valid PID)
-	LARGE_INTEGER          Timestamp;    // Block timestamp in milliseconds since 1970-01-01
-	char                  *Buffer;       // Buffer to use if this block isn't large enough, NULL otherwise
-	char                   Data[512];    // Block data
+    LLRB_ENTRY(BLOCK_NODE) TreeEntry;    // LLRB tree entry
+    LIST_ENTRY             ListEntry;    // Doubly-linked list of blocks
+    LONG                   RefCount;     // Block reference count
+    UINT32                 BlockType;    // Block type to aid in debugging
+    UINT32                 BlockLength;  // Block data length in bytes
+    UINT32                 SortId;       // Process or connection ID for sorting
+    UINT32                 ConnectionId; // Connection ID (0 if none)
+    UINT32                 ProcessId;    // Process ID (0xFFFFFFFF if none, since 0 is a valid PID)
+    LARGE_INTEGER          Timestamp;    // Block timestamp in milliseconds since 1970-01-01
+    char                  *Buffer;       // Buffer to use if this block isn't large enough, NULL otherwise
+    char                   Data[512];    // Block data
 };
 
 typedef struct BLOCK_NODE BLOCK_NODE, *PBLOCK_NODE;
 
 // Information about a registered reader
 struct READER_INFO {
-	LIST_ENTRY   ListEntry;       // Doubly-linked list of readers
-	RING_BUFFER  BlocksBuffer;    // Ring buffer that holds PCAP-NG blocks for normal processing
-	RING_BUFFER  InitialBuffer;   // Ring buffer that holds initial PCAP-NG blocks when resetting
-	UINT32       SnapLength;      // Number of bytes to capture (0 if none, 0xFFFFFFFF if unlimited)
-	UINT32       Id;              // Unique ID for this reader
-	UINT32       RingBufferSize;  // Size of blocks ring buffer
-	KEVENT      *DataEvent;       // Event to signal when data is available (NULL if none)
+    LIST_ENTRY   ListEntry;       // Doubly-linked list of readers
+    RING_BUFFER  BlocksBuffer;    // Ring buffer that holds PCAP-NG blocks for normal processing
+    RING_BUFFER  InitialBuffer;   // Ring buffer that holds initial PCAP-NG blocks when resetting
+    UINT32       SnapLength;      // Number of bytes to capture (0 if none, 0xFFFFFFFF if unlimited)
+    UINT32       Id;              // Unique ID for this reader
+    UINT32       RingBufferSize;  // Size of blocks ring buffer
+    KEVENT      *DataEvent;       // Event to signal when data is available (NULL if none)
 };
 
 typedef struct READER_INFO READER_INFO;
 
 typedef enum _PACKET_DIRECTION {
-	Inbound  = 1,
-	Outbound = 2,
+    Inbound  = 1,
+    Outbound = 2,
 } PACKET_DIRECTION;
 
 //----------------------------------------------------------------------------
@@ -322,8 +322,8 @@ NTSTATUS InitializeQueueManager(__in DEVICE_OBJECT *device);
 /// @returns New packet block buffer if successful; NULL otherwise
 __checkReturn
 BLOCK_NODE *QmAllocatePacketBlock(
-	__in const UINT32   dataLength,
-	__in char         **dataBuffer);
+    __in const UINT32   dataLength,
+    __in char         **dataBuffer);
 
 //----------------------------------------------------------------------------
 /// @brief Decrements block reference count and frees memory when count is zero
@@ -361,9 +361,9 @@ NTSTATUS QmDeregisterReader(__in READER_INFO *reader);
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 NTSTATUS QmEnqueueConnectionBlock(
-	__in const bool   opened,
-	__in const UINT32 connectionId,
-	__in const UINT32 processId);
+    __in const bool   opened,
+    __in const UINT32 connectionId,
+    __in const UINT32 processId);
 
 //----------------------------------------------------------------------------
 /// @brief Enqueues a packet block
@@ -382,14 +382,14 @@ NTSTATUS QmEnqueueConnectionBlock(
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 NTSTATUS QmEnqueuePacketBlock(
-	__in BLOCK_NODE             *blockNode,
-	__in const PACKET_DIRECTION  direction,
-	__in const UINT32            capturedLength,
-	__in const UINT32            packetLength,
-	__in const UINT32            connectionId,
-	__in const UINT16            addressFamily,
-	__in const UINT8             protocol,
-	__in const UINT16            port);
+    __in BLOCK_NODE             *blockNode,
+    __in const PACKET_DIRECTION  direction,
+    __in const UINT32            capturedLength,
+    __in const UINT32            packetLength,
+    __in const UINT32            connectionId,
+    __in const UINT16            addressFamily,
+    __in const UINT8             protocol,
+    __in const UINT16            port);
 
 //----------------------------------------------------------------------------
 /// @brief Enqueues a process block
@@ -405,13 +405,13 @@ NTSTATUS QmEnqueuePacketBlock(
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 NTSTATUS QmEnqueueProcessBlock(
-	__in const _Bool            started,
-	__in const UINT32          pid,
-	__in const UINT32          parentPid,
-	__in UNICODE_STRING       *path,
-	__in UNICODE_STRING       *args,
-	__in UNICODE_STRING       *sid,
-	__in const LARGE_INTEGER  *timestamp);
+    __in const _Bool            started,
+    __in const UINT32          pid,
+    __in const UINT32          parentPid,
+    __in UNICODE_STRING       *path,
+    __in UNICODE_STRING       *args,
+    __in UNICODE_STRING       *sid,
+    __in const LARGE_INTEGER  *timestamp);
 
 //----------------------------------------------------------------------------
 /// @brief Gets all open process and connection blocks
@@ -428,8 +428,8 @@ NTSTATUS QmEnqueueProcessBlock(
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 NTSTATUS QmGetInitialBlocks(
-	__in READER_INFO *reader,
-	__in const bool   useBlocksBuffer);
+    __in READER_INFO *reader,
+    __in const bool   useBlocksBuffer);
 
 //----------------------------------------------------------------------------
 /// @brief Gets maximum snap length for all registered readers
@@ -484,8 +484,8 @@ void QmSetOpenConnections(__in CONNECTIONS *connections);
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 NTSTATUS QmSetReaderDataEvent(
-	__in READER_INFO  *reader,
-	__in const HANDLE  userEvent);
+    __in READER_INFO  *reader,
+    __in const HANDLE  userEvent);
 
 //----------------------------------------------------------------------------
 /// @brief Sets the specified reader's snap length
@@ -496,8 +496,8 @@ NTSTATUS QmSetReaderDataEvent(
 /// @returns STATUS_SUCCESS if successful; NTSTATUS error code otherwise
 __checkReturn
 NTSTATUS QmSetReaderSnapLength(
-	__in READER_INFO  *reader,
-	__in const UINT32  snapLength);
+    __in READER_INFO  *reader,
+    __in const UINT32  snapLength);
 
 #ifdef __cplusplus
 };

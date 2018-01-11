@@ -26,28 +26,28 @@
 /// @param field  Field in the structure that contains the tree pointers
 /// @param del    Function to call to delete each node
 #define LLRB_CLEAR_GENERATE(name, type, field, del) \
-	static inline void name##_LLRB_CLEAR(struct name *head) { \
-		struct type *elm = head->rbh_root; \
-		while (elm) { \
-			if (elm->field.rbe_left) { \
-				elm = elm->field.rbe_left; \
-			} else if (elm->field.rbe_right) { \
-				elm = elm->field.rbe_right; \
-			} else { \
-				struct type *tmp = elm; \
-				elm = elm->field.rbe_parent; \
-				if (elm) { \
-					if (elm->field.rbe_left == tmp) { \
-						elm->field.rbe_left = NULL; \
-					} else if (elm->field.rbe_right == tmp) { \
-						elm->field.rbe_right = NULL; \
-					} \
-				} \
-				(del)(tmp); \
-			} \
-		} \
-		head->rbh_root = NULL; \
-	}
+    static inline void name##_LLRB_CLEAR(struct name *head) { \
+        struct type *elm = head->rbh_root; \
+        while (elm) { \
+            if (elm->field.rbe_left) { \
+                elm = elm->field.rbe_left; \
+            } else if (elm->field.rbe_right) { \
+                elm = elm->field.rbe_right; \
+            } else { \
+                struct type *tmp = elm; \
+                elm = elm->field.rbe_parent; \
+                if (elm) { \
+                    if (elm->field.rbe_left == tmp) { \
+                        elm->field.rbe_left = NULL; \
+                    } else if (elm->field.rbe_right == tmp) { \
+                        elm->field.rbe_right = NULL; \
+                    } \
+                } \
+                (del)(tmp); \
+            } \
+        } \
+        head->rbh_root = NULL; \
+    }
 
 //----------------------------------------------------------------------------
 /// @brief Deletes every node in the tree

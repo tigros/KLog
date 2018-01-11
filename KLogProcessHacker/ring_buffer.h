@@ -24,10 +24,10 @@
 
 //----------------------------------------------------------------------------
 struct RING_BUFFER {
-	UINT32   Front;
-	UINT32   Back;
-	UINT32   Length;
-	void   **Buffer;
+    UINT32   Front;
+    UINT32   Back;
+    UINT32   Length;
+    void   **Buffer;
 };
 
 typedef struct RING_BUFFER RING_BUFFER;
@@ -38,14 +38,14 @@ typedef struct RING_BUFFER RING_BUFFER;
 /// @param buffer  Buffer to hold pointers to blocks
 /// @param size    Size of buffer in bytes
 static inline void InitRingBuffer(
-	__in RING_BUFFER                      *queue,
-	__in __drv_in(__drv_aliasesMem) void **buffer,
-	__in ULONG                             size)
+    __in RING_BUFFER                      *queue,
+    __in __drv_in(__drv_aliasesMem) void **buffer,
+    __in ULONG                             size)
 {
-	queue->Front  = 0;
-	queue->Back   = 0;
-	queue->Buffer = buffer;
-	queue->Length = size / sizeof(void*);
+    queue->Front  = 0;
+    queue->Back   = 0;
+    queue->Buffer = buffer;
+    queue->Length = size / sizeof(void*);
 }
 
 //----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ static inline void InitRingBuffer(
 /// @returns True if ring buffer is empty; false otherwise
 static inline bool IsRingBufferEmpty(__in RING_BUFFER *ring)
 {
-	return (ring->Front == ring->Back) ? true : false;
+    return (ring->Front == ring->Back) ? true : false;
 }
 
 //----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ static inline bool IsRingBufferEmpty(__in RING_BUFFER *ring)
 /// @returns True if ring buffer is full; false otherwise
 static inline bool IsRingBufferFull(__in RING_BUFFER *ring)
 {
-	return (ring->Back == (ring->Front + ring->Length)) ? true : false;
+    return (ring->Back == (ring->Front + ring->Length)) ? true : false;
 }
 
 //----------------------------------------------------------------------------
@@ -78,32 +78,32 @@ static inline bool IsRingBufferFull(__in RING_BUFFER *ring)
 /// @returns Pointer to dequeued block if successful; NULL if buffer is empty
 static inline void* RingBufferDequeue(__in RING_BUFFER *ring)
 {
-	void *block = NULL;
+    void *block = NULL;
 
-	for (;;) {
-		// Get index of next slot in the buffer and check if the buffer is empty
-		const ULONG front = ring->Front;
-		if (front == ring->Back) {
-			return NULL;
-		}
+    for (;;) {
+        // Get index of next slot in the buffer and check if the buffer is empty
+        const ULONG front = ring->Front;
+        if (front == ring->Back) {
+            return NULL;
+        }
 
-		// Check if our slot contains anything yet
-		void **slot = ring->Buffer + (front % ring->Length);
-		block = *slot;
-		if (!block) {
-			continue;
-		}
+        // Check if our slot contains anything yet
+        void **slot = ring->Buffer + (front % ring->Length);
+        block = *slot;
+        if (!block) {
+            continue;
+        }
 
-		// If our slot still contains our block, write NULL into it
-		void *init = InterlockedCompareExchangePointer(slot, NULL, block);
-		if (init == block) {
-			break;
-		}
-	}
+        // If our slot still contains our block, write NULL into it
+        void *init = InterlockedCompareExchangePointer(slot, NULL, block);
+        if (init == block) {
+            break;
+        }
+    }
 
-	// Increment index of next slot (assumes that there is only one reader)
-	InterlockedIncrement(&ring->Front);
-	return block;
+    // Increment index of next slot (assumes that there is only one reader)
+    InterlockedIncrement(&ring->Front);
+    return block;
 }
 
 //----------------------------------------------------------------------------
@@ -114,27 +114,27 @@ static inline void* RingBufferDequeue(__in RING_BUFFER *ring)
 ///
 /// @returns True if successful; false if buffer is full
 static inline bool RingBufferEnqueue(
-	__in RING_BUFFER                     *ring,
-	__in __drv_in(__drv_aliasesMem) void *block)
+    __in RING_BUFFER                     *ring,
+    __in __drv_in(__drv_aliasesMem) void *block)
 {
-	ULONG back;
+    ULONG back;
 
-	for (;;) {
-		// Get index of next slot in the buffer and check if the buffer is full
-		back = ring->Back;
-		if ((back - ring->Front) >= ring->Length) {
-			return false;
-		}
+    for (;;) {
+        // Get index of next slot in the buffer and check if the buffer is full
+        back = ring->Back;
+        if ((back - ring->Front) >= ring->Length) {
+            return false;
+        }
 
-		// Increment index of next slot if no one else has already done it
-		if (InterlockedCompareExchange(&ring->Back, back + 1, back) == back) {
-			break;
-		}
-	}
+        // Increment index of next slot if no one else has already done it
+        if (InterlockedCompareExchange(&ring->Back, back + 1, back) == back) {
+            break;
+        }
+    }
 
-	// Store the block into our slot
-	ring->Buffer[back % ring->Length] = block;
-	return true;
+    // Store the block into our slot
+    ring->Buffer[back % ring->Length] = block;
+    return true;
 }
 
 #endif  // RING_BUFFER_H
