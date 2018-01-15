@@ -51,6 +51,7 @@ static PWE_KLOG_NODE gPrevBottomNode = NULL;
 
 static BTnode *gBTroot = NULL;
 static LLnode *gBacklogLL = NULL;
+PPH_STRING gExited = NULL;
 
 HANDLE myOpenDriver()
 {
@@ -90,9 +91,13 @@ VOID initDriver()
 
     // Discard first chunk.
     char buffer[bufferSize];
-    if (!ReadFile(gDriver, buffer, bufferSize, &bytesRead, NULL)) {
-        PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Cannot read bytes from driver");
-    }
+    do
+    {
+        if (!ReadFile(gDriver, buffer, bufferSize, &bytesRead, NULL)) {
+            PhShowMessage(KLogTreeNewHandle, MB_ICONERROR | MB_OK, L"KLog: Cannot read bytes from driver");
+            break;
+        }
+    } while (bytesRead > 0);
 }
 
 VOID EtInitializeKlogTab(
@@ -369,6 +374,7 @@ VOID WepAddChildKLogNode(
     PWE_KLOG_NODE childNode;
     LARGE_INTEGER tstamp;
     BTnode *btnode;
+    PPH_PROCESS_NODE processNode;
 
     childNode = WeAddKLogNode(Context);
     RtlSecondsSince1970ToTime(timestamp / 1000000, &tstamp);
@@ -384,17 +390,21 @@ VOID WepAddChildKLogNode(
     if (Wexecutable == NULL)
     {
         childNode->aklog.startexit = 1;
-        btnode = BTsearch(gBTroot, childNode->aklog.PID);
 
-        if (btnode)
+        if (btnode = BTsearch(gBTroot, PID))
         {
             childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
             childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
         }
+        else if (processNode = PhFindProcessNode(PID))
+        {
+            childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
+            childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
+        }
         else
         {
-            childNode->aklog.executable = PhCreateString(L"Exited");
-            childNode->aklog.cmdline = PhCreateString(L" ");
+            childNode->aklog.executable = (gExited ? PhReferenceObject(gExited) : (gExited = PhCreateString(L"Exited")));
+            childNode->aklog.cmdline = PhReferenceObject(gExited);
         }
     }
     else
