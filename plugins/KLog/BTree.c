@@ -11,15 +11,35 @@ BTnode *BTnew(PWE_KLOG_NODE klognode)
 
 void BTinsert(BTnode **root, BTnode *child)
 {
-    if (!*root)
-        *root = child;
-    else
-        BTinsert(child->PID <= (*root)->PID ? &(*root)->left : &(*root)->right , child);
+    BTnode **node = root;
+
+    while (*node != NULL)
+    {
+        if (child->PID <= (*node)->PID)
+            node = &(*node)->left;
+        else 
+            node = &(*node)->right;
+    }
+
+    *node = child;
 }
 
 BTnode *BTsearch(BTnode *root, DWORD PID)
 {
-    return !root ? NULL : root->PID == PID ? root : BTsearch(PID > root->PID ? root->right : root->left , PID);
+    BTnode *node = root;
+
+    while (node != NULL)
+    {
+        if (node->PID == PID)
+            return node;
+
+        if (PID < node->PID)
+            node = node->left;
+        else
+            node = node->right;
+    }
+
+    return NULL;
 }
 
 void BTfree(BTnode *root)
