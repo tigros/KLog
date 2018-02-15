@@ -24,17 +24,17 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\0"
 END
 
-3 TEXTINCLUDE
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -81,24 +81,6 @@ BEGIN
     END
 END
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_OPTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 208
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 70
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -121,17 +103,18 @@ BEGIN
     POPUP "KLog"
     BEGIN
         MENUITEM "&Go to Process",              ID_KLOG_GOTOPROCESS
-		MENUITEM "Go to &Parent Process",		ID_KLOG_GOTOPARENTPROCESS
-		MENUITEM SEPARATOR
+        MENUITEM "Go to &Parent Process",       ID_KLOG_GOTOPARENTPROCESS
+        MENUITEM SEPARATOR
         MENUITEM "Open &File Location\aEnter",  ID_KLOG_OPENFILELOCATION
-		MENUITEM SEPARATOR
-		MENUITEM "Clear &All",					ID_KLOG_CLEARALL
-		MENUITEM SEPARATOR
+        MENUITEM SEPARATOR
+        MENUITEM "Clear &All",                  ID_KLOG_CLEARALL
+        MENUITEM SEPARATOR
         MENUITEM "&Copy\aCtrl+C",               ID_KLOG_COPY
-		MENUITEM SEPARATOR
-		MENUITEM "Auto &Scroll",				ID_KLOG_AUTOSCROLL
-		MENUITEM SEPARATOR
-		MENUITEM "P&roperties",					ID_KLOG_PROPERTIES
+        MENUITEM "&Copy Pat&h\aCtrl+H",         ID_KLOG_COPYPATH
+        MENUITEM SEPARATOR
+        MENUITEM "Auto &Scroll",                ID_KLOG_AUTOSCROLL
+        MENUITEM SEPARATOR
+        MENUITEM "P&roperties",                 ID_KLOG_PROPERTIES
     END
 END
 

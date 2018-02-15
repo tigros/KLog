@@ -248,6 +248,10 @@ VOID EtCopyKLogList(
     VOID
     );
 
+VOID EtCopyKLogPathList(
+    VOID
+);
+
 VOID EtWriteKLogList(
     _Inout_ PPH_FILE_STREAM FileStream,
     _In_ ULONG Mode

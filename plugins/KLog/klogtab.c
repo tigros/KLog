@@ -968,6 +968,10 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
                 if (GetKeyState(VK_CONTROL) < 0)
                     EtHandleKLogCommand(ID_KLOG_COPY);
                 break;
+            case 'H':
+                if (GetKeyState(VK_CONTROL) < 0)
+                    EtHandleKLogCommand(ID_KLOG_COPYPATH);
+                break;
             case 'A':
                 if (GetKeyState(VK_CONTROL) < 0)
                     TreeNew_SelectRange(KLogTreeNewHandle, 0, -1);
@@ -1078,6 +1082,121 @@ VOID EtCopyKLogList(
     PhDereferenceObject(text);
 }
 
+VOID myPhMapDisplayIndexTreeNew(
+    _In_ HWND TreeNewHandle,
+    _Out_opt_ PULONG *DisplayToId,
+    _Out_opt_ PWSTR **DisplayToText,
+    _Out_ PULONG NumberOfColumns
+)
+{
+    PPH_TREENEW_COLUMN fixedColumn;
+    ULONG numberOfColumns;
+    PULONG displayToId;
+    PWSTR *displayToText;
+    ULONG i;
+    PH_TREENEW_COLUMN column;
+
+    fixedColumn = TreeNew_GetFixedColumn(TreeNewHandle);
+    numberOfColumns = TreeNew_GetVisibleColumnCount(TreeNewHandle);
+
+    displayToId = PhAllocate(numberOfColumns * sizeof(ULONG));
+
+    if (fixedColumn)
+    {
+        TreeNew_GetColumnOrderArray(TreeNewHandle, numberOfColumns - 1, displayToId + 1);
+        displayToId[0] = fixedColumn->Id;
+    }
+    else
+    {
+        TreeNew_GetColumnOrderArray(TreeNewHandle, numberOfColumns, displayToId);
+    }
+
+    if (DisplayToText)
+    {
+        displayToText = PhAllocate(numberOfColumns * sizeof(PWSTR));
+
+        for (i = 0; i < numberOfColumns; i++)
+        {
+            if (TreeNew_GetColumn(TreeNewHandle, displayToId[i], &column))
+            {
+                displayToText[i] = column.Text;
+            }
+        }
+
+        *DisplayToText = displayToText;
+    }
+
+    if (DisplayToId)
+        *DisplayToId = displayToId;
+    else
+        PhFree(displayToId);
+
+    *NumberOfColumns = numberOfColumns;
+}
+
+PPH_STRING PhGetPaths(     // PhGetTreeNewText
+    _In_ HWND TreeNewHandle,
+    _Reserved_ ULONG Reserved
+)
+{
+    PH_STRING_BUILDER stringBuilder;
+    PULONG displayToId;
+    ULONG rows;
+    ULONG columns;
+    ULONG i;
+    ULONG j;
+
+    myPhMapDisplayIndexTreeNew(TreeNewHandle, &displayToId, NULL, &columns);
+    rows = TreeNew_GetFlatNodeCount(TreeNewHandle);
+
+    PhInitializeStringBuilder(&stringBuilder, 0x100);
+
+    for (i = 0; i < rows; i++)
+    {
+        PH_TREENEW_GET_CELL_TEXT getCellText;
+
+        getCellText.Node = TreeNew_GetFlatNode(TreeNewHandle, i);
+        assert(getCellText.Node);
+
+        if (!getCellText.Node->Selected)
+            continue;
+
+        for (j = 0; j < columns; j++)
+        {
+            if (displayToId[j] == ETKLTNC_EXECUTABLE)
+            {
+                getCellText.Id = displayToId[j];
+                PhInitializeEmptyStringRef(&getCellText.Text);
+                TreeNew_GetCellText(TreeNewHandle, &getCellText);
+
+                PhAppendStringBuilder(&stringBuilder, &getCellText.Text);
+                PhAppendStringBuilder2(&stringBuilder, L", ");
+                break;
+            }
+        }
+
+        // Remove the trailing comma and space.
+        if (stringBuilder.String->Length != 0)
+            PhRemoveEndStringBuilder(&stringBuilder, 2);
+
+        PhAppendStringBuilder2(&stringBuilder, L"\r\n");
+    }
+
+    PhFree(displayToId);
+
+    return PhFinalStringBuilderString(&stringBuilder);
+}
+
+VOID EtCopyKLogPathList(
+    VOID
+)
+{
+    PPH_STRING text;
+    text = PhGetPaths(KLogTreeNewHandle, 0);
+    PhSetClipboardString(KLogTreeNewHandle, &text->sr);
+    PhDereferenceObject(text);
+}
+
 void clearallrows()
 {
     ULONG i;
@@ -1148,6 +1267,11 @@ VOID EtHandleKLogCommand(
             EtCopyKLogList();
         }
         break;
+    case ID_KLOG_COPYPATH:
+        {
+            EtCopyKLogPathList();
+        }
+        break;
     case ID_KLOG_PROPERTIES:
         {
             klogItem = EtGetSelectedKLogItem();
@@ -1184,6 +1308,7 @@ VOID EtpInitializeKLogMenu(
         PhSetFlagsAllEMenuItems(Menu, PH_EMENU_DISABLED, PH_EMENU_DISABLED);
         PhEnableEMenuItem(Menu, ID_KLOG_CLEARALL, TRUE);
         PhEnableEMenuItem(Menu, ID_KLOG_COPY, TRUE);
+        PhEnableEMenuItem(Menu, ID_KLOG_COPYPATH, TRUE);
     }
     else
     {
@@ -1192,6 +1317,7 @@ VOID EtpInitializeKLogMenu(
             PhSetFlagsAllEMenuItems(Menu, PH_EMENU_DISABLED, PH_EMENU_DISABLED);
             PhEnableEMenuItem(Menu, ID_KLOG_CLEARALL, TRUE);
             PhEnableEMenuItem(Menu, ID_KLOG_COPY, TRUE);
+            PhEnableEMenuItem(Menu, ID_KLOG_COPYPATH, TRUE);
             PhEnableEMenuItem(Menu, ID_KLOG_AUTOSCROLL, TRUE);
             return;
         }
