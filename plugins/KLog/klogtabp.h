@@ -19,7 +19,6 @@ struct klogstruc
     DWORD PID;
     DWORD ParentPID;
     BYTE startexit;
-    NTSTATUS exitcode;
     PPH_STRING executable;
     PPH_STRING cmdline;
 };

@@ -388,7 +388,6 @@ VOID WepAddChildKLogNode(
     childNode->aklog.ParentPID = ParentPID;
     PhPrintUInt32(childNode->aklog.PIDstring, PID);
     PhPrintUInt32(childNode->aklog.ParentPIDstring, ParentPID);
-    childNode->aklog.exitcode = 0;
     childNode->aklog.ExitCodestring[0] = L'\0';
 
     if (Wexecutable == NULL)
@@ -402,15 +401,16 @@ VOID WepAddChildKLogNode(
 
                 if (NT_SUCCESS(PhGetProcessExtendedBasicInformation(processNode->ProcessItem->QueryHandle, &basicInfo)))
                 {
+                    NTSTATUS exitcode = 0;
                     // The exit code for Linux processes is located in the lower 8-bits.
                     if (basicInfo.IsSubsystemProcess)
-                        childNode->aklog.exitcode = basicInfo.BasicInfo.ExitStatus >> 8;
+                        exitcode = basicInfo.BasicInfo.ExitStatus >> 8;
                     else
-                        childNode->aklog.exitcode = basicInfo.BasicInfo.ExitStatus;
+                        exitcode = basicInfo.BasicInfo.ExitStatus;
 
                     childNode->aklog.ExitCodestring[0] = L'0';
                     childNode->aklog.ExitCodestring[1] = L'x';
-                    _itow_s(childNode->aklog.exitcode, &childNode->aklog.ExitCodestring[2], 10, 16);
+                    _itow_s(exitcode, &childNode->aklog.ExitCodestring[2], 10, 16);
                     int len = wcslen(childNode->aklog.ExitCodestring);
                     for (int i = 2; i < len; i++)
                         childNode->aklog.ExitCodestring[i] = towupper(childNode->aklog.ExitCodestring[i]);
