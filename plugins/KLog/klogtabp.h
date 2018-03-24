@@ -13,7 +13,7 @@ struct klogstruc
     WCHAR timestampstring[20];
     WCHAR PIDstring[8];
     WCHAR ParentPIDstring[8];
-    WCHAR ExitCodestring[12];
+    WCHAR ExitCodestring[11];
     LONGLONG timestamp;
     LARGE_INTEGER time;
     DWORD PID;

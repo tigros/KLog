@@ -410,7 +410,7 @@ VOID WepAddChildKLogNode(
 
                     childNode->aklog.ExitCodestring[0] = L'0';
                     childNode->aklog.ExitCodestring[1] = L'x';
-                    _itow_s(exitcode, &childNode->aklog.ExitCodestring[2], 10, 16);
+                    _itow_s(exitcode, &childNode->aklog.ExitCodestring[2], 9, 16);
                     int len = wcslen(childNode->aklog.ExitCodestring);
                     for (int i = 2; i < len; i++)
                         childNode->aklog.ExitCodestring[i] = towupper(childNode->aklog.ExitCodestring[i]);
