@@ -27,6 +27,8 @@
 #include "BTree.h"
 #include <time.h>
 
+#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+
 BOOLEAN KLogTreeNewCreated = FALSE;
 HWND KLogTreeNewHandle;
 
@@ -386,20 +388,42 @@ VOID WepAddChildKLogNode(
     childNode->aklog.ParentPID = ParentPID;
     PhPrintUInt32(childNode->aklog.PIDstring, PID);
     PhPrintUInt32(childNode->aklog.ParentPIDstring, ParentPID);
+    childNode->aklog.exitcode = 0;
+    childNode->aklog.ExitCodestring[0] = L'\0';
 
     if (Wexecutable == NULL)
     {
         childNode->aklog.startexit = 1;
+        if (processNode = PhFindProcessNode(PID))
+        {
+            if (processNode->ProcessItem->QueryHandle)
+            {
+                PROCESS_EXTENDED_BASIC_INFORMATION basicInfo;
 
-        if (btnode = BTsearch(gBTroot, PID))
+                if (NT_SUCCESS(PhGetProcessExtendedBasicInformation(processNode->ProcessItem->QueryHandle, &basicInfo)))
+                {
+                    // The exit code for Linux processes is located in the lower 8-bits.
+                    if (basicInfo.IsSubsystemProcess)
+                        childNode->aklog.exitcode = basicInfo.BasicInfo.ExitStatus >> 8;
+                    else
+                        childNode->aklog.exitcode = basicInfo.BasicInfo.ExitStatus;
+
+                    childNode->aklog.ExitCodestring[0] = L'0';
+                    childNode->aklog.ExitCodestring[1] = L'x';
+                    _itow_s(childNode->aklog.exitcode, &childNode->aklog.ExitCodestring[2], 10, 16);
+                    int len = wcslen(childNode->aklog.ExitCodestring);
+                    for (int i = 2; i < len; i++)
+                        childNode->aklog.ExitCodestring[i] = towupper(childNode->aklog.ExitCodestring[i]);
+                }
+            }
+
+            childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
+            childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
+        }
+        else if (btnode = BTsearch(gBTroot, PID))
         {
             childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
             childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
-        }
-        else if (processNode = PhFindProcessNode(PID))
-        {
-            childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
-            childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
         }
         else
         {
@@ -659,6 +683,7 @@ VOID EtInitializeKLogTreeList(
     PhAddTreeNewColumn(hwnd, ETKLTNC_EXECUTABLE, TRUE, L"Executable", 200, PH_ALIGN_LEFT, 4, DT_END_ELLIPSIS);
     PhAddTreeNewColumn(hwnd, ETKLTNC_CMDLINE, TRUE, L"Command Line", 700, PH_ALIGN_LEFT, 5, DT_END_ELLIPSIS);
     PhAddTreeNewColumn(hwnd, ETKLTNC_PARENTPID, TRUE, L"Parent PID", 100, PH_ALIGN_RIGHT, 6, DT_RIGHT);
+    PhAddTreeNewColumn(hwnd, ETKLTNC_EXITCODE, TRUE, L"Exit code", 100, PH_ALIGN_RIGHT, 7, DT_RIGHT);
 
     TreeNew_SetRedraw(hwnd, TRUE);
 
@@ -937,6 +962,11 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
                 if (!klogItem->cmdline)
                     return FALSE;
                 getCellText->Text = klogItem->cmdline->sr;
+            }
+            break;
+            case ETKLTNC_EXITCODE:
+            {
+                PhInitializeStringRef(&getCellText->Text, klogItem->ExitCodestring);
             }
             break;
 
@@ -1417,6 +1447,11 @@ BOOLEAN NTAPI EtpSearchKLogListFilterCallback(
         return TRUE;
 
     PhInitializeStringRef(&sr, klogItem->ParentPIDstring);
+
+    if (wordMatch(&sr))
+        return TRUE;
+
+    PhInitializeStringRef(&sr, klogItem->ExitCodestring);
 
     if (wordMatch(&sr))
         return TRUE;
