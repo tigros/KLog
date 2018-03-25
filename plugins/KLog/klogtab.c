@@ -432,13 +432,8 @@ VOID WepAddChildKLogNode(
 
         if (btnode = BTsearch(gBTExitCodesRoot, PID))
         {
-            childNode->aklog.ExitCodestring[0] = L'0';
-            childNode->aklog.ExitCodestring[1] = L'x';
             childNode->aklog.exitcode = btnode->exitcode;
-            _itow_s(btnode->exitcode, &childNode->aklog.ExitCodestring[2], 9, 16);
-            int len = wcslen(childNode->aklog.ExitCodestring);
-            for (int i = 2; i < len; i++)
-                childNode->aklog.ExitCodestring[i] = towupper(childNode->aklog.ExitCodestring[i]);
+            _itow_s(btnode->exitcode, childNode->aklog.ExitCodestring, 12, 10);
         }
 
         if (btnode = BTsearch(gBTroot, PID))
@@ -862,7 +857,7 @@ BEGIN_SORT_FUNCTION(ExitCode)
     else if (klogItem2->ExitCodestring[0] == L'\0')
         sortResult = 1;
     else
-        sortResult = uintcmp(klogItem1->exitcode, klogItem2->exitcode);
+        sortResult = intcmp(klogItem1->exitcode, klogItem2->exitcode);
 }
 END_SORT_FUNCTION
 
