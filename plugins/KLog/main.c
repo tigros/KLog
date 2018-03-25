@@ -44,6 +44,7 @@ PPH_PLUGIN PluginInstance;
 PH_CALLBACK_REGISTRATION PluginUnloadCallbackRegistration;
 PH_CALLBACK_REGISTRATION MainWindowShowingCallbackRegistration;
 PH_CALLBACK_REGISTRATION ProcessesUpdatedCallbackRegistration;
+PH_CALLBACK_REGISTRATION ProcessRemovedCallbackRegistration;
 
 static HANDLE ModuleProcessId;
 
@@ -77,6 +78,15 @@ LRESULT CALLBACK MainWndPluginSubclassProc(
     }
 
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+VOID NTAPI ProcessRemovedHandler(
+    _In_opt_ PVOID Parameter,
+    _In_opt_ PVOID Context
+)
+{
+    PPH_PROCESS_ITEM processItem = Parameter;
+    StoreExitCode(processItem);
 }
 
 LOGICAL DllMain(
@@ -120,6 +130,8 @@ LOGICAL DllMain(
                 NULL,
                 &ProcessesUpdatedCallbackRegistration
                 );
+            PhRegisterCallback(&PhProcessRemovedEvent, ProcessRemovedHandler, 
+                NULL, &ProcessRemovedCallbackRegistration);
 
             {
                 static PH_SETTING_CREATE settings[] =

@@ -18,6 +18,7 @@ struct klogstruc
     LARGE_INTEGER time;
     DWORD PID;
     DWORD ParentPID;
+    NTSTATUS exitcode;
     BYTE startexit;
     PPH_STRING executable;
     PPH_STRING cmdline;
@@ -302,5 +303,6 @@ VOID EtSaveSettingsKLogTreeList(
     );
 
 void CleanupDriver();
+void StoreExitCode(PPH_PROCESS_ITEM processItem);
 
 #endif

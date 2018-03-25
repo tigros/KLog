@@ -52,6 +52,7 @@ static PH_CALLBACK_REGISTRATION SearchChangedRegistration;
 static PWE_KLOG_NODE gPrevBottomNode = NULL;
 
 static BTnode *gBTroot = NULL;
+static BTnode *gBTExitCodesRoot = NULL;
 static LLnode *gBacklogLL = NULL;
 PPH_STRING gExited = NULL;
 
@@ -348,7 +349,6 @@ PWE_KLOG_NODE WeAddKLogNode(
 
 void add2BT(PWE_KLOG_NODE childNode)
 {
-
     BTnode *node;
 
     node = BTsearch(gBTroot, childNode->aklog.PID);
@@ -361,7 +361,42 @@ void add2BT(PWE_KLOG_NODE childNode)
     {
         node->klognode = childNode;
     }
+}
 
+void addExitCode(HANDLE pid, NTSTATUS exitcode)
+{
+    BTnode *node;
+
+    node = BTsearch(gBTExitCodesRoot, pid);
+
+    if (!node)
+    {
+        BTinsert(&gBTExitCodesRoot, BTnewExitCode(pid, exitcode));
+    }
+    else
+    {
+        node->exitcode = exitcode;
+    }
+}
+
+void StoreExitCode(PPH_PROCESS_ITEM processItem)
+{
+    if (processItem->QueryHandle)
+    {
+        PROCESS_EXTENDED_BASIC_INFORMATION basicInfo;
+        NTSTATUS exitcode;
+
+        if (NT_SUCCESS(PhGetProcessExtendedBasicInformation(processItem->QueryHandle, &basicInfo)))
+        {
+            // The exit code for Linux processes is located in the lower 8-bits.
+            if (basicInfo.IsSubsystemProcess)
+                exitcode = basicInfo.BasicInfo.ExitStatus >> 8;
+            else
+                exitcode = basicInfo.BasicInfo.ExitStatus;
+
+            addExitCode(processItem->ProcessId, exitcode);
+        }
+    }
 }
 
 VOID WepAddChildKLogNode(
@@ -388,44 +423,35 @@ VOID WepAddChildKLogNode(
     childNode->aklog.ParentPID = ParentPID;
     PhPrintUInt32(childNode->aklog.PIDstring, PID);
     PhPrintUInt32(childNode->aklog.ParentPIDstring, ParentPID);
+    childNode->aklog.exitcode = 0;
     childNode->aklog.ExitCodestring[0] = L'\0';
 
     if (Wexecutable == NULL)
     {
         childNode->aklog.startexit = 1;
-        if (processNode = PhFindProcessNode(PID))
+
+        if (btnode = BTsearch(gBTExitCodesRoot, PID))
         {
-            if (processNode->ProcessItem->QueryHandle)
-            {
-                PROCESS_EXTENDED_BASIC_INFORMATION basicInfo;
-
-                if (NT_SUCCESS(PhGetProcessExtendedBasicInformation(processNode->ProcessItem->QueryHandle, &basicInfo)))
-                {
-                    NTSTATUS exitcode = 0;
-                    // The exit code for Linux processes is located in the lower 8-bits.
-                    if (basicInfo.IsSubsystemProcess)
-                        exitcode = basicInfo.BasicInfo.ExitStatus >> 8;
-                    else
-                        exitcode = basicInfo.BasicInfo.ExitStatus;
-
-                    childNode->aklog.ExitCodestring[0] = L'0';
-                    childNode->aklog.ExitCodestring[1] = L'x';
-                    _itow_s(exitcode, &childNode->aklog.ExitCodestring[2], 9, 16);
-                    int len = wcslen(childNode->aklog.ExitCodestring);
-                    for (int i = 2; i < len; i++)
-                        childNode->aklog.ExitCodestring[i] = towupper(childNode->aklog.ExitCodestring[i]);
-                }
-            }
-
-            childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
-            childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
+            childNode->aklog.ExitCodestring[0] = L'0';
+            childNode->aklog.ExitCodestring[1] = L'x';
+            childNode->aklog.exitcode = btnode->exitcode;
+            _itow_s(btnode->exitcode, &childNode->aklog.ExitCodestring[2], 9, 16);
+            int len = wcslen(childNode->aklog.ExitCodestring);
+            for (int i = 2; i < len; i++)
+                childNode->aklog.ExitCodestring[i] = towupper(childNode->aklog.ExitCodestring[i]);
         }
-        else if (btnode = BTsearch(gBTroot, PID))
+
+        if (btnode = BTsearch(gBTroot, PID))
         {
             childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
             childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
         }
-        else
+        else if (processNode = PhFindProcessNode(PID))
+        {
+            childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
+            childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
+        }
+        else 
         {
             childNode->aklog.executable = (gExited ? PhReferenceObject(gExited) : (gExited = PhCreateString(L"Exited")));
             childNode->aklog.cmdline = PhReferenceObject(gExited);
@@ -758,6 +784,9 @@ void CleanupDriver()
 
     BTfree(gBTroot);
     gBTroot = NULL;
+
+    BTfree(gBTExitCodesRoot);
+    gBTExitCodesRoot = NULL;
 }
 
 VOID EtRemoveKLogNode(
@@ -826,6 +855,17 @@ BEGIN_SORT_FUNCTION(ParentPID)
 }
 END_SORT_FUNCTION
 
+BEGIN_SORT_FUNCTION(ExitCode)
+{
+    if (klogItem1->ExitCodestring[0] == L'\0')
+        sortResult = -1;
+    else if (klogItem2->ExitCodestring[0] == L'\0')
+        sortResult = 1;
+    else
+        sortResult = uintcmp(klogItem1->exitcode, klogItem2->exitcode);
+}
+END_SORT_FUNCTION
+
 BEGIN_SORT_FUNCTION(StartExit)
 {
     sortResult = -uintcmp(klogItem1->startexit, klogItem2->startexit);
@@ -885,7 +925,8 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
                     SORT_FUNCTION(StartExit),
                     SORT_FUNCTION(Executable),
                     SORT_FUNCTION(CommandLine),
-                    SORT_FUNCTION(ParentPID)
+                    SORT_FUNCTION(ParentPID),
+                    SORT_FUNCTION(ExitCode)
                 };
                 int (__cdecl *sortFunction)(const void *, const void *);
 

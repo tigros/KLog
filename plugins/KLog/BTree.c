@@ -9,6 +9,15 @@ BTnode *BTnew(PWE_KLOG_NODE klognode)
     return n;
 }
 
+BTnode *BTnewExitCode(DWORD pid, NTSTATUS exitcode)
+{
+    BTnode *n = malloc(sizeof(BTnode));
+    n->PID = pid;
+    n->exitcode = exitcode;
+    n->left = n->right = NULL;
+    return n;
+}
+
 void BTinsert(BTnode **root, BTnode *child)
 {
     BTnode **node = root;
