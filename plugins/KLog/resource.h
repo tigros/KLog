@@ -33,6 +33,9 @@
 #define ID_KLOG_CLEARALL                40013
 #define ID_KLOG_GOTOPARENTPROCESS       40014
 #define ID_KLOG_COPYPATH                40069
+#define ID_KLOG_COPYCL                  40070
+#define ID_KLOG_COPYEC                  40071
+#define ID_KLOG_COPYPID                 40072
 #define ID_KLOG_AUTOSCROLL              40050
 
 // Next default values for new objects

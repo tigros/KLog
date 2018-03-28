@@ -852,7 +852,9 @@ END_SORT_FUNCTION
 
 BEGIN_SORT_FUNCTION(ExitCode)
 {
-    if (klogItem1->ExitCodestring[0] == L'\0')
+    if (klogItem1->ExitCodestring[0] == L'\0' && klogItem2->ExitCodestring[0] == L'\0')
+        sortResult = 0;
+    else if (klogItem1->ExitCodestring[0] == L'\0')
         sortResult = -1;
     else if (klogItem2->ExitCodestring[0] == L'\0')
         sortResult = 1;
@@ -1200,9 +1202,9 @@ VOID myPhMapDisplayIndexTreeNew(
     *NumberOfColumns = numberOfColumns;
 }
 
-PPH_STRING PhGetPaths(     // PhGetTreeNewText
+PPH_STRING GetColVals(     // PhGetTreeNewText
     _In_ HWND TreeNewHandle,
-    _Reserved_ ULONG Reserved
+    int col
 )
 {
     PH_STRING_BUILDER stringBuilder;
@@ -1229,7 +1231,7 @@ PPH_STRING PhGetPaths(     // PhGetTreeNewText
 
         for (j = 0; j < columns; j++)
         {
-            if (displayToId[j] == ETKLTNC_EXECUTABLE)
+            if (displayToId[j] == col)
             {
                 getCellText.Id = displayToId[j];
                 PhInitializeEmptyStringRef(&getCellText.Text);
@@ -1253,12 +1255,10 @@ PPH_STRING PhGetPaths(     // PhGetTreeNewText
     return PhFinalStringBuilderString(&stringBuilder);
 }
 
-VOID EtCopyKLogPathList(
-    VOID
-)
+VOID CopyCol(int col)
 {
     PPH_STRING text;
-    text = PhGetPaths(KLogTreeNewHandle, 0);
+    text = GetColVals(KLogTreeNewHandle, col);
     PhSetClipboardString(KLogTreeNewHandle, &text->sr);
     PhDereferenceObject(text);
 }
@@ -1335,7 +1335,22 @@ VOID EtHandleKLogCommand(
         break;
     case ID_KLOG_COPYPATH:
         {
-            EtCopyKLogPathList();
+            CopyCol(ETKLTNC_EXECUTABLE);
+        }
+        break;
+    case ID_KLOG_COPYCL:
+        {
+            CopyCol(ETKLTNC_CMDLINE);
+        }
+        break;
+    case ID_KLOG_COPYEC:
+        {
+            CopyCol(ETKLTNC_EXITCODE);
+        }
+        break;
+    case ID_KLOG_COPYPID:
+        {
+            CopyCol(ETKLTNC_PID);
         }
         break;
     case ID_KLOG_PROPERTIES:
@@ -1375,6 +1390,9 @@ VOID EtpInitializeKLogMenu(
         PhEnableEMenuItem(Menu, ID_KLOG_CLEARALL, TRUE);
         PhEnableEMenuItem(Menu, ID_KLOG_COPY, TRUE);
         PhEnableEMenuItem(Menu, ID_KLOG_COPYPATH, TRUE);
+        PhEnableEMenuItem(Menu, ID_KLOG_COPYCL, TRUE);
+        PhEnableEMenuItem(Menu, ID_KLOG_COPYEC, TRUE);
+        PhEnableEMenuItem(Menu, ID_KLOG_COPYPID, TRUE);
     }
     else
     {

@@ -110,7 +110,10 @@ BEGIN
         MENUITEM "Clear &All",                  ID_KLOG_CLEARALL
         MENUITEM SEPARATOR
         MENUITEM "&Copy\aCtrl+C",               ID_KLOG_COPY
-        MENUITEM "&Copy Pat&h\aCtrl+H",         ID_KLOG_COPYPATH
+        MENUITEM "Copy Pat&h\aCtrl+H",          ID_KLOG_COPYPATH
+        MENUITEM "Copy Cmd Line",               ID_KLOG_COPYCL
+        MENUITEM "Copy Exit Code",              ID_KLOG_COPYEC
+        MENUITEM "Copy PID",                    ID_KLOG_COPYPID
         MENUITEM SEPARATOR
         MENUITEM "Auto &Scroll",                ID_KLOG_AUTOSCROLL
         MENUITEM SEPARATOR
