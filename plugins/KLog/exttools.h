@@ -24,7 +24,8 @@ extern PPH_PLUGIN PluginInstance;
 #define ETKLTNC_CMDLINE 5
 #define ETKLTNC_PARENTPID 6
 #define ETKLTNC_EXITCODE 7
-#define ETKLTNC_MAXIMUM 8
+#define ETKLTNC_TIMEALIVE 8
+#define ETKLTNC_MAXIMUM 9
 
 // main
 VOID EtInitializeKlogTab(

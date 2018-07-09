@@ -15,6 +15,7 @@ struct klogstruc
     WCHAR ParentPIDstring[8];
     WCHAR ExitCodestring[12];
     LONGLONG timestamp;
+    LONGLONG timealive;
     LARGE_INTEGER time;
     DWORD PID;
     DWORD ParentPID;
@@ -22,6 +23,7 @@ struct klogstruc
     BYTE startexit;
     PPH_STRING executable;
     PPH_STRING cmdline;
+    PPH_STRING TimeAliveText;
 };
 
 typedef struct klogstruc *pklog;

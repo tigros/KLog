@@ -28,6 +28,7 @@
 #include <time.h>
 
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+#define TICKSTO1970         0x019db1ded53e8000LL
 
 BOOLEAN KLogTreeNewCreated = FALSE;
 HWND KLogTreeNewHandle;
@@ -440,11 +441,21 @@ VOID WepAddChildKLogNode(
         {
             childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
             childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
+            childNode->aklog.timealive = (timestamp - btnode->klognode->aklog.timestamp) * 10;
+            PhMoveReference(&childNode->aklog.TimeAliveText, PhFormatTimeSpan(
+                childNode->aklog.timealive,
+                PH_TIMESPAN_HMSM
+            ));
         }
         else if (processNode = PhFindProcessNode(PID))
         {
             childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
             childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
+            childNode->aklog.timealive = timestamp * 10 + TICKSTO1970 - processNode->ProcessItem->CreateTime.QuadPart;
+            PhMoveReference(&childNode->aklog.TimeAliveText, PhFormatTimeSpan(
+                childNode->aklog.timealive,
+                PH_TIMESPAN_HMSM
+            ));
         }
         else 
         {
@@ -705,6 +716,7 @@ VOID EtInitializeKLogTreeList(
     PhAddTreeNewColumn(hwnd, ETKLTNC_CMDLINE, TRUE, L"Command Line", 700, PH_ALIGN_LEFT, 5, DT_END_ELLIPSIS);
     PhAddTreeNewColumn(hwnd, ETKLTNC_PARENTPID, TRUE, L"Parent PID", 100, PH_ALIGN_RIGHT, 6, DT_RIGHT);
     PhAddTreeNewColumn(hwnd, ETKLTNC_EXITCODE, TRUE, L"Exit code", 100, PH_ALIGN_RIGHT, 7, DT_RIGHT);
+    PhAddTreeNewColumn(hwnd, ETKLTNC_TIMEALIVE, TRUE, L"Time Alive", 90, PH_ALIGN_LEFT, 8, 0);
 
     TreeNew_SetRedraw(hwnd, TRUE);
 
@@ -796,6 +808,7 @@ VOID EtRemoveKLogNode(
     if (KLogNode->TimeText) PhDereferenceObject(KLogNode->TimeText);
     if (KLogNode->aklog.executable) PhDereferenceObject(KLogNode->aklog.executable);
     if (KLogNode->aklog.cmdline) PhDereferenceObject(KLogNode->aklog.cmdline);
+    if (KLogNode->aklog.TimeAliveText) PhDereferenceObject(KLogNode->aklog.TimeAliveText);
 
     PhFree(KLogNode);
 }
@@ -835,6 +848,12 @@ END_SORT_FUNCTION
 BEGIN_SORT_FUNCTION(Time)
 {
     sortResult = uint64cmp(klogItem1->timestamp, klogItem2->timestamp);
+}
+END_SORT_FUNCTION
+
+BEGIN_SORT_FUNCTION(TimeAlive)
+{
+    sortResult = uint64cmp(klogItem1->timealive, klogItem2->timealive);
 }
 END_SORT_FUNCTION
 
@@ -923,7 +942,8 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
                     SORT_FUNCTION(Executable),
                     SORT_FUNCTION(CommandLine),
                     SORT_FUNCTION(ParentPID),
-                    SORT_FUNCTION(ExitCode)
+                    SORT_FUNCTION(ExitCode),
+                    SORT_FUNCTION(TimeAlive)
                 };
                 int (__cdecl *sortFunction)(const void *, const void *);
 
@@ -986,6 +1006,13 @@ BOOLEAN NTAPI EtpKLogTreeNewCallback(
                 PhMoveReference(&node->TimeText, PhFormatDateTime(&systemTime));
                 if (node->TimeText)
                     getCellText->Text = node->TimeText->sr;
+            }
+            break;
+            case ETKLTNC_TIMEALIVE:
+            {
+                if (!klogItem->TimeAliveText)
+                    return FALSE;
+                getCellText->Text = klogItem->TimeAliveText->sr;
             }
             break;
             case ETKLTNC_EXECUTABLE:
