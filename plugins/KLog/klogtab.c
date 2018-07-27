@@ -29,6 +29,7 @@
 
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #define TICKSTO1970         0x019db1ded53e8000LL
+#define PH_TICKS_HOURS(Ticks) ((ULONG64)(Ticks) / PH_TICKS_PER_HOUR)
 
 BOOLEAN KLogTreeNewCreated = FALSE;
 HWND KLogTreeNewHandle;
@@ -442,25 +443,34 @@ VOID WepAddChildKLogNode(
             childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
             childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
             childNode->aklog.timealive = (timestamp - btnode->klognode->aklog.timestamp) * 10;
-            PhMoveReference(&childNode->aklog.TimeAliveText, PhFormatTimeSpan(
-                childNode->aklog.timealive,
-                PH_TIMESPAN_HMSM
-            ));
         }
         else if (processNode = PhFindProcessNode(PID))
         {
             childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
             childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
             childNode->aklog.timealive = timestamp * 10 + TICKSTO1970 - processNode->ProcessItem->CreateTime.QuadPart;
-            PhMoveReference(&childNode->aklog.TimeAliveText, PhFormatTimeSpan(
-                childNode->aklog.timealive,
-                PH_TIMESPAN_HMSM
-            ));
         }
         else 
         {
             childNode->aklog.executable = (gExited ? PhReferenceObject(gExited) : (gExited = PhCreateString(L"Exited")));
             childNode->aklog.cmdline = PhReferenceObject(gExited);
+        }
+
+        if (childNode->aklog.timealive != 0)
+        {
+            PPH_STRING string;
+            string = PhCreateStringEx(NULL, PH_TIMESPAN_STR_LEN);
+            _snwprintf(
+                string->Buffer,
+                PH_TIMESPAN_STR_LEN,
+                L"%02I64u:%02I64u:%02I64u.%03I64u",
+                PH_TICKS_HOURS(childNode->aklog.timealive),
+                PH_TICKS_PARTIAL_MIN(childNode->aklog.timealive),
+                PH_TICKS_PARTIAL_SEC(childNode->aklog.timealive),
+                PH_TICKS_PARTIAL_MS(childNode->aklog.timealive)
+            );
+            PhTrimToNullTerminatorString(string);
+            PhMoveReference(&childNode->aklog.TimeAliveText, string);
         }
     }
     else
