@@ -1267,7 +1267,6 @@ PPH_STRING GetColVals(     // PhGetTreeNewText
             continue;
 
         for (j = 0; j < columns; j++)
-        {
             if (displayToId[j] == col)
             {
                 getCellText.Id = displayToId[j];
@@ -1275,14 +1274,8 @@ PPH_STRING GetColVals(     // PhGetTreeNewText
                 TreeNew_GetCellText(TreeNewHandle, &getCellText);
 
                 PhAppendStringBuilder(&stringBuilder, &getCellText.Text);
-                PhAppendStringBuilder2(&stringBuilder, L", ");
                 break;
             }
-        }
-
-        // Remove the trailing comma and space.
-        if (stringBuilder.String->Length != 0)
-            PhRemoveEndStringBuilder(&stringBuilder, 2);
 
         PhAppendStringBuilder2(&stringBuilder, L"\r\n");
     }
