@@ -441,13 +441,13 @@ VOID WepAddChildKLogNode(
         if (btnode = BTsearch(gBTroot, PID))
         {
             childNode->aklog.executable = PhReferenceObject(btnode->klognode->aklog.executable);
-            childNode->aklog.cmdline = PhReferenceObject(btnode->klognode->aklog.cmdline);
+            childNode->aklog.cmdline = btnode->klognode->aklog.cmdline ? PhReferenceObject(btnode->klognode->aklog.cmdline) : NULL;
             childNode->aklog.timealive = (timestamp - btnode->klognode->aklog.timestamp) * 10;
         }
         else if (processNode = PhFindProcessNode(PID))
         {
             childNode->aklog.executable = PhReferenceObject(processNode->ProcessItem->FileName);
-            childNode->aklog.cmdline = PhReferenceObject(processNode->ProcessItem->CommandLine);
+            childNode->aklog.cmdline = processNode->ProcessItem->CommandLine ? PhReferenceObject(processNode->ProcessItem->CommandLine) : NULL;
             childNode->aklog.timealive = timestamp * 10 + TICKSTO1970 - processNode->ProcessItem->CreateTime.QuadPart;
         }
         else 
