@@ -1276,7 +1276,8 @@ PPH_STRING GetColVals(     // PhGetTreeNewText
                 PhAppendStringBuilder(&stringBuilder, &getCellText.Text);
                 break;
             }
-
+        if (i < rows - 1)
+            PhAppendStringBuilder2(&stringBuilder, L"\r\n");
     }
 
     PhFree(displayToId);
