@@ -1277,7 +1277,6 @@ PPH_STRING GetColVals(     // PhGetTreeNewText
                 break;
             }
 
-        PhAppendStringBuilder2(&stringBuilder, L"\r\n");
     }
 
     PhFree(displayToId);
